@@ -1,0 +1,179 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-cormorant: 'Cormorant Garamond', Georgia, serif;
+  --font-plus-jakarta: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-playfair: 'Playfair Display', Georgia, serif;
+  --font-inter: 'Inter', system-ui, sans-serif;
+
+  /* Unified Warm Linen / Cream Light Palette */
+  --bg-daynight: #FAF7F2;
+  --text-daynight: #1A1A1A;
+  --text-muted-daynight: #7A6E67;
+  --border-daynight: rgba(232, 221, 208, 0.8);
+  --card-bg-daynight: rgba(250, 247, 242, 0.95);
+  --glass-panel-bg: rgba(255, 255, 255, 0.7);
+  --amber-glow: rgba(255, 140, 0, 0.35);
+  --night-accent-glow: rgba(217, 119, 6, 0.25);
+}
+
+/* Base Body Aesthetic */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg-daynight);
+  color: var(--text-daynight);
+  font-family: var(--font-inter), var(--font-plus-jakarta), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Master Day-to-Night Wrapper - GSAP Direct Scrubbed (NO CSS TRANSITIONS TO PREVENT JANK) */
+.daynight-smooth-container {
+  background-color: var(--bg-daynight);
+  color: var(--text-daynight);
+  transition: none !important;
+}
+
+/* Interactive elements get smooth micro-interactions */
+a, button, input, select {
+  transition: color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Ensure canvas elements never trigger transitions */
+canvas {
+  transition: none !important;
+}
+
+/* Luxury Glassmorphism Utilities */
+.glass-panel {
+  background: var(--glass-panel-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-daynight);
+}
+
+.glass-panel-dark {
+  background: rgba(26, 26, 26, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.glass-cta {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 32px 0 rgba(212, 163, 115, 0.15);
+}
+
+.glass-cta:hover {
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(255, 140, 0, 0.6);
+  box-shadow: 0 12px 40px 0 rgba(255, 140, 0, 0.38);
+}
+
+/* 3D Isometric Card Utilities */
+.perspective-container {
+  perspective: 1100px;
+}
+
+.card-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.45s ease;
+  will-change: transform, box-shadow;
+}
+
+.card-3d:hover {
+  transform: translateY(-10px) rotateX(6deg) rotateY(-6deg) translateZ(14px);
+  box-shadow: 0 25px 50px -12px rgba(255, 140, 0, 0.42), 0 0 25px rgba(255, 140, 0, 0.25);
+  border-color: rgba(255, 140, 0, 0.5) !important;
+}
+
+/* Ambient Flame Flickering Animation for CSS fallback */
+@keyframes flame-flicker {
+  0%, 100% {
+    opacity: 0.95;
+    transform: scale(1);
+    filter: drop-shadow(0 0 15px rgba(255, 140, 0, 0.8));
+  }
+  25% {
+    opacity: 0.82;
+    transform: scale(0.97) translateY(1px);
+    filter: drop-shadow(0 0 10px rgba(255, 140, 0, 0.6));
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.04) translateY(-1px);
+    filter: drop-shadow(0 0 22px rgba(255, 180, 50, 0.9));
+  }
+  75% {
+    opacity: 0.88;
+    transform: scale(0.98);
+    filter: drop-shadow(0 0 14px rgba(255, 140, 0, 0.7));
+  }
+}
+
+.flame-glow {
+  animation: flame-flicker 2.4s infinite ease-in-out;
+}
+
+/* Warm Luxury Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F9F6F0;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #E8DDD0;
+  border-radius: 9999px;
+  border: 2px solid #F9F6F0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #FF8C00;
+}
+
+/* Selection Color */
+::selection {
+  background-color: #FF8C00;
+  color: #1A1A1A;
+}
+
+/* Sticky Header Day-to-Night Sync */
+header.sticky {
+  background-color: var(--card-bg-daynight);
+  border-color: var(--border-daynight);
+  color: var(--text-daynight);
+  transition: background-color 0.4s ease, border-color 0.4s ease;
+}
+
+header.sticky nav a,
+header.sticky a,
+header.sticky button {
+  color: var(--text-daynight);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

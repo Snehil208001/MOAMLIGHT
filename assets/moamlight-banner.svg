@@ -1,0 +1,200 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="bgGlow" cx="50%" cy="45%" r="65%" fx="50%" fy="40%">
+      <stop offset="0%" stop-color="#2C221A" stop-opacity="0.9" />
+      <stop offset="45%" stop-color="#191411" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#0C0A09" stop-opacity="1" />
+    </radialGradient>
+
+    <!-- Flame Core Radial Gradient -->
+    <radialGradient id="flameInner" cx="50%" cy="60%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="30%" stop-color="#FEF08A" />
+      <stop offset="70%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#EA580C" stop-opacity="0.2" />
+    </radialGradient>
+
+    <!-- Golden Aura Gradient -->
+    <radialGradient id="auraGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.45" />
+      <stop offset="50%" stop-color="#D97706" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#D97706" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Candle Body Gradient -->
+    <linearGradient id="candleGlass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3D322A" stop-opacity="0.8" />
+      <stop offset="50%" stop-color="#241E1A" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#14110F" stop-opacity="0.95" />
+    </linearGradient>
+
+    <!-- Shimmering Gold Text Gradient -->
+    <linearGradient id="goldShimmer" x1="0%" y1="0%" x2="200%" y2="0%">
+      <stop offset="0%" stop-color="#D4AF37">
+        <animate attributeName="offset" values="-1; 1" dur="4.5s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="25%" stop-color="#FFF3C4">
+        <animate attributeName="offset" values="-0.75; 1.25" dur="4.5s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="50%" stop-color="#E2B857">
+        <animate attributeName="offset" values="-0.5; 1.5" dur="4.5s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="75%" stop-color="#99772B">
+        <animate attributeName="offset" values="-0.25; 1.75" dur="4.5s" repeatCount="indefinite" />
+      </stop>
+      <stop offset="100%" stop-color="#D4AF37">
+        <animate attributeName="offset" values="0; 2" dur="4.5s" repeatCount="indefinite" />
+      </stop>
+    </linearGradient>
+
+    <!-- Border Glow Gradient -->
+    <linearGradient id="pillBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.5" />
+      <stop offset="100%" stop-color="#78350F" stop-opacity="0.2" />
+    </linearGradient>
+
+    <style>
+      @keyframes flameFlicker {
+        0% { transform: scale(1) translate(0, 0) rotate(0deg); opacity: 0.95; }
+        20% { transform: scale(0.96, 1.04) translate(-0.5px, -1px) rotate(-1deg); opacity: 0.9; }
+        40% { transform: scale(1.03, 0.97) translate(0.8px, 0.5px) rotate(1.2deg); opacity: 1; }
+        60% { transform: scale(0.97, 1.02) translate(-0.4px, -0.6px) rotate(-0.8deg); opacity: 0.92; }
+        80% { transform: scale(1.02, 0.98) translate(0.5px, 0.2px) rotate(0.6deg); opacity: 0.98; }
+        100% { transform: scale(1) translate(0, 0) rotate(0deg); opacity: 0.95; }
+      }
+
+      @keyframes pulseAura {
+        0%, 100% { transform: scale(1); opacity: 0.5; }
+        50% { transform: scale(1.18); opacity: 0.8; }
+      }
+
+      @keyframes floatEmber1 {
+        0% { transform: translate(0, 0); opacity: 0; }
+        25% { opacity: 0.8; }
+        75% { opacity: 0.6; }
+        100% { transform: translate(-28px, -95px); opacity: 0; }
+      }
+      @keyframes floatEmber2 {
+        0% { transform: translate(0, 0); opacity: 0; }
+        30% { opacity: 0.9; }
+        70% { opacity: 0.5; }
+        100% { transform: translate(32px, -110px); opacity: 0; }
+      }
+      @keyframes floatEmber3 {
+        0% { transform: translate(0, 0); opacity: 0; }
+        20% { opacity: 0.7; }
+        80% { opacity: 0.4; }
+        100% { transform: translate(-14px, -125px); opacity: 0; }
+      }
+      @keyframes floatEmber4 {
+        0% { transform: translate(0, 0); opacity: 0; }
+        35% { opacity: 0.85; }
+        75% { opacity: 0.45; }
+        100% { transform: translate(22px, -85px); opacity: 0; }
+      }
+
+      @keyframes breathPulse {
+        0%, 100% { opacity: 0.7; }
+        50% { opacity: 1; }
+      }
+
+      .flame-core {
+        transform-origin: 600px 145px;
+        animation: flameFlicker 1.8s ease-in-out infinite;
+      }
+      .flame-aura {
+        transform-origin: 600px 135px;
+        animation: pulseAura 2.6s ease-in-out infinite;
+      }
+      .ember-1 { animation: floatEmber1 3.2s cubic-bezier(0.25, 1, 0.5, 1) infinite; }
+      .ember-2 { animation: floatEmber2 3.8s cubic-bezier(0.25, 1, 0.5, 1) 0.8s infinite; }
+      .ember-3 { animation: floatEmber3 4.2s cubic-bezier(0.25, 1, 0.5, 1) 1.5s infinite; }
+      .ember-4 { animation: floatEmber4 3.5s cubic-bezier(0.25, 1, 0.5, 1) 2.2s infinite; }
+      .pulse-tagline { animation: breathPulse 3.5s ease-in-out infinite; }
+    </style>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width="1200" height="480" rx="18" fill="url(#bgGlow)" />
+  <rect width="1196" height="476" x="2" y="2" rx="16" fill="none" stroke="#D4AF37" stroke-opacity="0.18" stroke-width="1.5" />
+
+  <!-- Subtle Ambient Glow Rings -->
+  <circle cx="600" cy="140" r="130" fill="url(#auraGlow)" class="flame-aura" />
+  <circle cx="600" cy="140" r="65" fill="#F59E0B" opacity="0.15" filter="blur(8px)" />
+
+  <!-- Animated Floating Embers -->
+  <circle cx="598" cy="115" r="2.2" fill="#FDE047" class="ember-1" />
+  <circle cx="603" cy="120" r="1.8" fill="#F59E0B" class="ember-2" />
+  <circle cx="595" cy="125" r="1.5" fill="#FEF08A" class="ember-3" />
+  <circle cx="606" cy="118" r="2.0" fill="#F97316" class="ember-4" />
+
+  <!-- Candle Glass Vessel -->
+  <g transform="translate(565, 138)">
+    <!-- Wick -->
+    <line x1="35" y1="2" x2="35" y2="10" stroke="#451A03" stroke-width="2.5" stroke-linecap="round" />
+    
+    <!-- Vessel Silhouette -->
+    <path d="M 12 10 L 58 10 C 64 10, 68 14, 66 22 L 60 52 C 59 58, 54 62, 48 62 L 22 62 C 16 62, 11 58, 10 52 L 4 22 C 2 14, 6 10, 12 10 Z" fill="url(#candleGlass)" stroke="#D4AF37" stroke-width="1" stroke-opacity="0.35" />
+    
+    <!-- Wax Pool Glow -->
+    <ellipse cx="35" cy="14" rx="22" ry="4" fill="#FDE68A" opacity="0.45" />
+  </g>
+
+  <!-- Animated Flame Flame Silhouette -->
+  <g class="flame-core">
+    <!-- Outer Flame -->
+    <path d="M 600 88 C 591 106, 584 120, 587 132 C 589 141, 595 146, 600 146 C 605 146, 611 141, 613 132 C 616 120, 609 106, 600 88 Z" fill="url(#flameInner)" />
+    <!-- Inner White Core -->
+    <path d="M 600 108 C 596 118, 593 126, 594 133 C 595 138, 598 142, 600 142 C 602 142, 605 138, 606 133 C 607 126, 604 118, 600 108 Z" fill="#FFFFFF" opacity="0.9" />
+  </g>
+
+  <!-- Brand Title: MOAMLIGHT with Animated Shimmer -->
+  <text x="600" y="260" font-family="'Cormorant Garamond', 'Cinzel', 'Didot', 'Georgia', serif" font-size="52" font-weight="700" fill="url(#goldShimmer)" text-anchor="middle" letter-spacing="12">
+    MOAMLIGHT
+  </text>
+
+  <!-- Tagline / Descriptor -->
+  <text x="600" y="296" font-family="'Plus Jakarta Sans', 'Inter', 'Segoe UI', -apple-system, sans-serif" font-size="13" font-weight="600" fill="#E7E2DA" text-anchor="middle" letter-spacing="4.5" opacity="0.9" class="pulse-tagline">
+    LUXURY INDIAN BOTANICAL CANDLES • HEADLESS D2C STOREFRONT
+  </text>
+
+  <!-- Tech Stack Accent Line -->
+  <line x1="420" y1="324" x2="780" y2="324" stroke="#D4AF37" stroke-opacity="0.25" stroke-width="1" />
+
+  <!-- Feature Pills Row -->
+  <g transform="translate(180, 355)">
+    <!-- Pill 1: Next.js 14 -->
+    <g transform="translate(0, 0)">
+      <rect width="185" height="42" rx="21" fill="#1C1714" stroke="url(#pillBorder)" stroke-width="1.2" />
+      <circle cx="24" cy="21" r="5" fill="#10B981" />
+      <text x="38" y="26" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="600" fill="#FAF5EE">Next.js 14 App Router</text>
+    </g>
+
+    <!-- Pill 2: Shopify GraphQL -->
+    <g transform="translate(210, 0)">
+      <rect width="195" height="42" rx="21" fill="#1C1714" stroke="url(#pillBorder)" stroke-width="1.2" />
+      <circle cx="24" cy="21" r="5" fill="#96BF48" />
+      <text x="38" y="26" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="600" fill="#FAF5EE">Shopify Storefront API</text>
+    </g>
+
+    <!-- Pill 3: Three.js Particles -->
+    <g transform="translate(430, 0)">
+      <rect width="190" height="42" rx="21" fill="#1C1714" stroke="url(#pillBorder)" stroke-width="1.2" />
+      <circle cx="24" cy="21" r="5" fill="#F59E0B" />
+      <text x="38" y="26" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="600" fill="#FAF5EE">Three.js Ember Engine</text>
+    </g>
+
+    <!-- Pill 4: SWR Cache -->
+    <g transform="translate(645, 0)">
+      <rect width="195" height="42" rx="21" fill="#1C1714" stroke="url(#pillBorder)" stroke-width="1.2" />
+      <circle cx="24" cy="21" r="5" fill="#38BDF8" />
+      <text x="38" y="26" font-family="'Plus Jakarta Sans', sans-serif" font-size="12" font-weight="600" fill="#FAF5EE">Sub-ms SWR Cache</text>
+    </g>
+  </g>
+
+  <!-- Bottom Accent Tag -->
+  <text x="600" y="440" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="500" fill="#A8A29E" text-anchor="middle" letter-spacing="1.5">
+    Artisanal 100% Soy Wax • Hand-Poured in India • Passwordless OTP Auth • Shiprocket Logistics Ready
+  </text>
+</svg>
