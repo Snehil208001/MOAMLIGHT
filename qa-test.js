@@ -95,7 +95,7 @@ async function runQA() {
     // -------------------------------------------------------------
     console.log('\n--- Step 0: Mobile Viewport (390x844) Verification ---');
     await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true });
-    await page.goto(baseUrl, { waitUntil: 'networkidle0', timeout: 30000 });
+    await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
     await new Promise((r) => setTimeout(r, 1000));
     const mobileHeroBuffer = await page.screenshot({ fullPage: false });
     saveToBoth('00_mobile_homepage.png', mobileHeroBuffer);
@@ -105,7 +105,7 @@ async function runQA() {
     // -------------------------------------------------------------
     console.log('\n--- Step 1: Desktop Viewport Homepage Hero ---');
     await page.setViewport({ width: 1280, height: 960, deviceScaleFactor: 2 });
-    await page.goto(baseUrl, { waitUntil: 'networkidle0', timeout: 30000 });
+    await page.goto(baseUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
     await new Promise((r) => setTimeout(r, 1200));
 
     // Verify Announcement bar & Trust badges in Hero
@@ -158,7 +158,7 @@ async function runQA() {
     const pdpUrl = `${baseUrl}/products/mysore-sandalwood-amber`;
     console.log(`\n--- Step 2: Navigate to PDP (${pdpUrl}) ---`);
     await page.setViewport({ width: 1280, height: 960, deviceScaleFactor: 2 });
-    await page.goto(pdpUrl, { waitUntil: 'networkidle0', timeout: 30000 });
+    await page.goto(pdpUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
     await new Promise((r) => setTimeout(r, 1200));
 
     const pdpVerification = await page.evaluate(() => {
@@ -274,7 +274,7 @@ async function runQA() {
       await page.waitForFunction(() => window.location.pathname === '/checkout', { timeout: 6000 });
     } catch (e) {
       console.log('Fallback: navigating to /checkout directly');
-      await page.goto(`${baseUrl}/checkout`, { waitUntil: 'networkidle0', timeout: 30000 });
+      await page.goto(`${baseUrl}/checkout`, { waitUntil: 'domcontentloaded', timeout: 30000 });
     }
 
     await new Promise((r) => setTimeout(r, 1200));

@@ -1,12 +1,16 @@
 import type { Metadata, Viewport } from 'next';
-import { Cormorant_Garamond, Plus_Jakarta_Sans, Playfair_Display, Inter, Montserrat } from 'next/font/google';
+import { Cormorant_Garamond, Plus_Jakarta_Sans } from 'next/font/google';
+import 'lenis/dist/lenis.css';
 import './globals.css';
 import { CartProvider } from '@/context/CartContext';
+import { AuthProvider } from '@/context/AuthContext';
 import { ToastProvider } from '@/context/ToastContext';
+import { SmoothScrollProvider } from '@/components/providers/SmoothScrollProvider';
 import { AnnouncementBar } from '@/components/home/AnnouncementBar';
 import { Header } from '@/components/home/Header';
 import { CartDrawer } from '@/components/cart/CartDrawer';
 import { Footer } from '@/components/home/Footer';
+import { NavigationProgressBar } from '@/components/ui/NavigationProgressBar';
 
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
@@ -17,25 +21,8 @@ const cormorant = Cormorant_Garamond({
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-plus-jakarta',
-  display: 'swap',
-});
-
-const playfair = Playfair_Display({
-  subsets: ['latin'],
-  variable: '--font-playfair',
-  display: 'swap',
-});
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-});
-
-const montserrat = Montserrat({
-  subsets: ['latin'],
-  variable: '--font-montserrat',
   display: 'swap',
 });
 
@@ -183,7 +170,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${cormorant.variable} ${plusJakarta.variable} ${playfair.variable} ${inter.variable} ${montserrat.variable}`}>
+    <html lang="en" className={`${cormorant.variable} ${plusJakarta.variable}`}>
       <head>
         <script
           type="application/ld+json"
@@ -192,25 +179,33 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen flex flex-col bg-warm-linen text-charcoal">
-        <CartProvider>
-          <ToastProvider>
-            {/* Promotional Top Bar */}
-            <AnnouncementBar />
+      <body className="min-h-screen bg-warm-linen text-charcoal antialiased">
+        <SmoothScrollProvider>
+          {/* Instant Luxury Amber Navigation Progress Bar */}
+          <NavigationProgressBar />
+          <CartProvider>
+            <AuthProvider>
+              <ToastProvider>
+                <div id="app-root" className="relative min-h-screen flex flex-col">
+                  {/* Promotional Top Bar */}
+                  <AnnouncementBar />
 
-            {/* Main Sticky Navigation */}
-            <Header />
+                  {/* Main Sticky Navigation */}
+                  <Header />
 
-            {/* Page Dynamic Content */}
-            <main className="flex-1">{children}</main>
+                  {/* Page Dynamic Content */}
+                  <main className="flex-1 relative z-10">{children}</main>
 
-            {/* Persistent Slide-Out Cart Drawer */}
-            <CartDrawer />
+                  {/* Persistent Slide-Out Cart Drawer */}
+                  <CartDrawer />
 
-            {/* Indian D2C Footer */}
-            <Footer />
-          </ToastProvider>
-        </CartProvider>
+                  {/* Indian D2C Footer */}
+                  <Footer />
+                </div>
+              </ToastProvider>
+            </AuthProvider>
+          </CartProvider>
+        </SmoothScrollProvider>
       </body>
     </html>
   );

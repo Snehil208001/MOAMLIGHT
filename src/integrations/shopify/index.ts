@@ -11,5 +11,7 @@ export * from './normalize';
 export * from './queries/getProducts';
 export * from './queries/getProduct';
 export * from './queries/getCart';
+export * from './queries/getCustomer';
 export * from './mutations/cart';
+export * from './mutations/customer';
 export * from './api';

@@ -1,5 +1,10 @@
+export interface CartItemAttribute {
+  key: string;
+  value: string;
+}
+
 export interface CartItem {
-  id: string; // Composite unique key: `${productId}-${variantId}`
+  id: string; // Composite unique key: `${productId}-${variantId}${engravingHash}`
   productId: string;
   title: string;
   scentProfile: string;
@@ -11,6 +16,9 @@ export interface CartItem {
   quantity: number;
   weightGrams: number;
   shopifyLineId?: string;
+  engravingText?: string;
+  engravingFont?: string;
+  attributes?: CartItemAttribute[];
 }
 
 export interface AppliedCoupon {
@@ -47,4 +55,3 @@ export interface CartContextType {
   isSyncing?: boolean;
   redirectToCheckout?: () => Promise<void>;
 }
-

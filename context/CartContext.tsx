@@ -90,9 +90,19 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (cart.lines?.edges?.length) {
       setItems((prevItems) => {
         return prevItems.map((item) => {
-          const matchedEdge = cart.lines.edges.find(
-            (e) => e.node.merchandise.id === item.variantId
-          );
+          const matchedEdge = cart.lines.edges.find((e) => {
+            if (e.node.merchandise.id !== item.variantId) return false;
+            if (item.engravingText) {
+              const engAttr = e.node.attributes?.find(
+                (a) => a.key === 'Engraving' || a.key === 'Engraving Text'
+              );
+              return engAttr?.value === item.engravingText.trim();
+            }
+            const isEngravedEdge = e.node.attributes?.some(
+              (a) => a.key === 'Engraving' || a.key === 'Engraving Text' || a.key === '_engraved'
+            );
+            return !isEngravedEdge;
+          });
           if (matchedEdge) {
             return {
               ...item,
@@ -182,7 +192,11 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     itemData: Omit<CartItem, 'quantity' | 'id' | 'shopifyLineId'>,
     quantity: number = 1
   ) => {
-    const compositeId = `${itemData.productId}-${itemData.variantId}`;
+    // Unique composite ID ensuring engraved candles have separate line items
+    const engravingSuffix = itemData.engravingText
+      ? `-engraved-${encodeURIComponent(itemData.engravingText.trim().toLowerCase())}`
+      : '';
+    const compositeId = `${itemData.productId}-${itemData.variantId}${engravingSuffix}`;
 
     // 1. Optimistic UI update
     setItems((prev) => {
@@ -199,7 +213,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
     setIsOpen(true);
 
-    // 2. Background Shopify sync
+    // 2. Background Shopify sync with custom Line Item Properties
     startSync();
     (async () => {
       try {
@@ -208,10 +222,26 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           await inFlightCartPromiseRef.current;
         }
 
+        const lineAttributes = itemData.engravingText
+          ? [
+              { key: 'Engraving', value: itemData.engravingText.trim() },
+              { key: 'Engraving Text', value: itemData.engravingText.trim() },
+              { key: 'Engraving Font', value: itemData.engravingFont || 'Royal Atelier Serif' },
+              { key: '_engraved', value: 'true' },
+              ...(itemData.attributes || []),
+            ]
+          : itemData.attributes;
+
+        const lineInput = {
+          merchandiseId: itemData.variantId,
+          quantity,
+          attributes: lineAttributes,
+        };
+
         const currentCartId = cartIdRef.current;
         if (!currentCartId) {
-          // Prepare attributes & discount codes if already set
-          const attributes = isGiftRef.current
+          // Prepare cart attributes & discount codes if already set
+          const cartAttributes = isGiftRef.current
             ? [
                 { key: 'is_gift', value: 'true' },
                 { key: 'gift_message', value: giftMessageRef.current },
@@ -220,8 +250,8 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           const discountCodes = couponRef.current ? [couponRef.current] : undefined;
 
           const createPromise = createCart(
-            [{ merchandiseId: itemData.variantId, quantity }],
-            attributes,
+            [lineInput],
+            cartAttributes,
             discountCodes
           );
           inFlightCartPromiseRef.current = createPromise;
@@ -232,9 +262,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             reconcileCart(newCart);
           }
         } else {
-          const updated = await addToCart(currentCartId, [
-            { merchandiseId: itemData.variantId, quantity },
-          ]);
+          const updated = await addToCart(currentCartId, [lineInput]);
           if (updated) {
             reconcileCart(updated);
           }
@@ -436,6 +464,15 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const lineInputs = items.map((item) => ({
           merchandiseId: item.variantId,
           quantity: item.quantity,
+          attributes: item.engravingText
+            ? [
+                { key: 'Engraving', value: item.engravingText.trim() },
+                { key: 'Engraving Text', value: item.engravingText.trim() },
+                { key: 'Engraving Font', value: item.engravingFont || 'Royal Atelier Serif' },
+                { key: '_engraved', value: 'true' },
+                ...(item.attributes || []),
+              ]
+            : item.attributes,
         }));
         const attributes = isGiftRef.current
           ? [

@@ -18,3 +18,19 @@ export function calculateDiscount(mrp: number, price: number): number {
   if (!mrp || mrp <= price) return 0;
   return Math.round(((mrp - price) / mrp) * 100);
 }
+
+/**
+ * Generates an optimized responsive image URL with scaled dimensions and WebP/AVIF auto-format
+ */
+export function getOptimizedImageUrl(url: string, width = 600, quality = 80): string {
+  if (!url) return '';
+  if (url.includes('images.unsplash.com')) {
+    const base = url.split('?')[0];
+    return `${base}?auto=format&fit=crop&w=${width}&q=${quality}`;
+  }
+  if (url.includes('cdn.shopify.com')) {
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}width=${width}&format=webp`;
+  }
+  return url;
+}

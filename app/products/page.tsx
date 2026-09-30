@@ -3,7 +3,7 @@ import React from 'react';
 import { getProducts } from '@/src/integrations/shopify';
 import { ProductsCatalogClient } from './ProductsCatalogClient';
 
-export const revalidate = 0; // Real-time live prices directly from Shopify
+export const revalidate = 60; // Instant prefetching with background cache revalidation
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://moamlight.in').replace(/\/$/, '');
 

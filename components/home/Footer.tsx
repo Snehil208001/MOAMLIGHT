@@ -87,16 +87,16 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2 text-xs text-warm-linen/70">
               <li>
                 <a
-                  href={process.env.NEXT_PUBLIC_SHOPIFY_CUSTOMER_ACCOUNT_URL || 'https://shopify.com/79258517672/account'}
+                  href={process.env.NEXT_PUBLIC_SHOPIFY_CUSTOMER_ACCOUNT_URL || 'https://eyj01h-j3.myshopify.com/account/login'}
                   className="hover:text-warm-linen transition-colors cursor-pointer flex items-center gap-1.5 text-warm-linen font-medium"
                 >
                   <span>My Account & Orders</span>
-                  <span className="text-[10px] bg-amber-500/20 text-amber-gold px-1.5 py-0.5 rounded font-mono">Sign In</span>
+                  <span className="text-[10px] bg-amber-500/20 text-amber-gold px-1.5 py-0.5 rounded font-mono">Shopify OTP</span>
                 </a>
               </li>
               <li>
                 <a
-                  href={process.env.NEXT_PUBLIC_SHOPIFY_CUSTOMER_ACCOUNT_URL || 'https://shopify.com/79258517672/account'}
+                  href={process.env.NEXT_PUBLIC_SHOPIFY_CUSTOMER_ACCOUNT_URL || 'https://eyj01h-j3.myshopify.com/account/login'}
                   className="hover:text-warm-linen transition-colors cursor-pointer"
                 >
                   Track Consignment (Live Status)

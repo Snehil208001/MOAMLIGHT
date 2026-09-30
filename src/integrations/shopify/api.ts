@@ -17,6 +17,14 @@ import {
   CART_DISCOUNT_CODES_UPDATE_MUTATION,
   CART_ATTRIBUTES_UPDATE_MUTATION,
 } from './mutations/cart';
+import {
+  CUSTOMER_ACCESS_TOKEN_CREATE_MUTATION,
+  CUSTOMER_CREATE_MUTATION,
+  CUSTOMER_ACCESS_TOKEN_DELETE_MUTATION,
+  CUSTOMER_RECOVER_MUTATION,
+  CART_BUYER_IDENTITY_UPDATE_MUTATION,
+} from './mutations/customer';
+import { GET_CUSTOMER_QUERY } from './queries/getCustomer';
 import { normalizeProduct } from './normalize';
 import { PRODUCTS, getProductBySlug, getProductById } from '@/data/products';
 import { Product } from '@/types/product';
@@ -34,6 +42,17 @@ import {
   CartLineInput,
   CartLineUpdateInput,
   AttributeInput,
+  Customer,
+  CustomerAccessToken,
+  CustomerCreateInput,
+  CustomerAccessTokenCreateInput,
+  CustomerCreateMutationResult,
+  CustomerAccessTokenCreateMutationResult,
+  CustomerAccessTokenDeleteMutationResult,
+  CustomerRecoverMutationResult,
+  GetCustomerQueryResult,
+  CartBuyerIdentityUpdateMutationResult,
+  ShopifyUserError,
 } from './types';
 
 // ==========================================
@@ -63,6 +82,7 @@ function createMockCart(
             currencyCode: 'INR',
           },
         },
+        attributes: (line.attributes || []).map((attr) => ({ key: attr.key, value: attr.value })),
         merchandise: {
           id: line.merchandiseId,
           title: 'Classic 240g',
@@ -116,7 +136,60 @@ let inMemoryProductsCache: {
 } | null = null;
 
 const inMemoryProductMap = new Map<string, { data: Product | null; timestamp: number }>();
-const SWR_TTL_MS = 5000; // 5-second ultra-fresh cache window: loads in 0ms, updates from Shopify within 5s
+const SWR_TTL_MS = 60000; // 60-second fresh window: loads in 0ms, updates from Shopify in background
+let isRevalidatingAll = false;
+const revalidatingHandles = new Set<string>();
+
+async function revalidateProductsInBackground(): Promise<void> {
+  if (isRevalidatingAll) return;
+  isRevalidatingAll = true;
+  try {
+    const data = await shopifyFetch<GetProductsQueryResult>({
+      query: GET_PRODUCTS_QUERY,
+      variables: { first: 50 },
+      tags: ['products'],
+      revalidate: 3600,
+    });
+    if (data.products?.edges && data.products.edges.length > 0) {
+      const normalized = data.products.edges.map((edge) => normalizeProduct(edge.node));
+      const now = Date.now();
+      inMemoryProductsCache = { data: normalized, timestamp: now };
+      // Pre-warm individual handle and ID lookup maps
+      for (const p of normalized) {
+        inMemoryProductMap.set(p.slug, { data: p, timestamp: now });
+        inMemoryProductMap.set(p.id, { data: p, timestamp: now });
+      }
+    }
+  } catch {
+    // Non-blocking background revalidation failure handled gracefully
+  } finally {
+    isRevalidatingAll = false;
+  }
+}
+
+async function revalidateProductInBackground(handle: string): Promise<void> {
+  if (revalidatingHandles.has(handle)) return;
+  revalidatingHandles.add(handle);
+  try {
+    const data = await shopifyFetch<GetProductByHandleQueryResult>({
+      query: GET_PRODUCT_BY_HANDLE_QUERY,
+      variables: { handle },
+      tags: ['products', `product-${handle}`],
+      revalidate: 3600,
+    });
+    if (data.product) {
+      const normalized = normalizeProduct(data.product);
+      const now = Date.now();
+      inMemoryProductMap.set(handle, { data: normalized, timestamp: now });
+      inMemoryProductMap.set(normalized.slug, { data: normalized, timestamp: now });
+      inMemoryProductMap.set(normalized.id, { data: normalized, timestamp: now });
+    }
+  } catch {
+    // Non-blocking background revalidation failure handled gracefully
+  } finally {
+    revalidatingHandles.delete(handle);
+  }
+}
 
 export function clearShopifyMemoryCache(): void {
   inMemoryProductsCache = null;
@@ -129,7 +202,7 @@ export function clearShopifyMemoryCache(): void {
 
 /**
  * Fetches the product catalog from Shopify Storefront API.
- * Uses in-memory micro-cache + React.cache() for sub-millisecond response times.
+ * Uses in-memory micro-cache + true Stale-While-Revalidate for sub-millisecond response times.
  */
 export const getProducts = cache(async function getProducts(options?: {
   first?: number;
@@ -140,11 +213,11 @@ export const getProducts = cache(async function getProducts(options?: {
   }
 
   const now = Date.now();
-  if (
-    !options?.query &&
-    inMemoryProductsCache &&
-    now - inMemoryProductsCache.timestamp < SWR_TTL_MS
-  ) {
+  if (!options?.query && inMemoryProductsCache) {
+    if (now - inMemoryProductsCache.timestamp >= SWR_TTL_MS) {
+      // Revalidate in background without blocking response
+      revalidateProductsInBackground();
+    }
     return inMemoryProductsCache.data;
   }
 
@@ -167,6 +240,11 @@ export const getProducts = cache(async function getProducts(options?: {
     const normalized = data.products.edges.map((edge) => normalizeProduct(edge.node));
     if (!options?.query) {
       inMemoryProductsCache = { data: normalized, timestamp: now };
+      // Pre-warm individual handle and ID lookup maps for instantaneous PDP loads
+      for (const p of normalized) {
+        inMemoryProductMap.set(p.slug, { data: p, timestamp: now });
+        inMemoryProductMap.set(p.id, { data: p, timestamp: now });
+      }
     }
     return normalized;
   } catch (error) {
@@ -186,7 +264,7 @@ function fallbackFindProduct(key: string): Product | null {
 
 /**
  * Fetches a single product by handle/slug from Shopify Storefront API.
- * Uses in-memory micro-cache + React.cache() to deduplicate requests across generateMetadata and PDP components.
+ * Uses in-memory micro-cache + true Stale-While-Revalidate to deduplicate requests.
  */
 export const getProduct = cache(async function getProduct(handle: string): Promise<Product | null> {
   if (!isShopifyConfigured()) {
@@ -194,11 +272,31 @@ export const getProduct = cache(async function getProduct(handle: string): Promi
   }
 
   const now = Date.now();
+
+  // 1. Direct hit in individual product map (0 ms)
   const cached = inMemoryProductMap.get(handle);
-  if (cached && now - cached.timestamp < SWR_TTL_MS) {
+  if (cached && cached.data) {
+    if (now - cached.timestamp >= SWR_TTL_MS) {
+      // Revalidate in background without blocking response
+      revalidateProductInBackground(handle);
+    }
     return cached.data;
   }
 
+  // 2. Fast-path hit from catalog cache (e.g. loaded via homepage or products catalog)
+  if (inMemoryProductsCache?.data) {
+    const found = inMemoryProductsCache.data.find(
+      (p) => p.slug === handle || p.id === handle || p.id.replace('prod-', '') === handle
+    );
+    if (found) {
+      inMemoryProductMap.set(handle, { data: found, timestamp: now });
+      inMemoryProductMap.set(found.slug, { data: found, timestamp: now });
+      inMemoryProductMap.set(found.id, { data: found, timestamp: now });
+      return found;
+    }
+  }
+
+  // 3. Remote Shopify Storefront GraphQL fetch (fallback for direct PDP cold hits)
   try {
     const data = await shopifyFetch<GetProductByHandleQueryResult>({
       query: GET_PRODUCT_BY_HANDLE_QUERY,
@@ -213,6 +311,8 @@ export const getProduct = cache(async function getProduct(handle: string): Promi
 
     const normalized = normalizeProduct(data.product);
     inMemoryProductMap.set(handle, { data: normalized, timestamp: now });
+    inMemoryProductMap.set(normalized.slug, { data: normalized, timestamp: now });
+    inMemoryProductMap.set(normalized.id, { data: normalized, timestamp: now });
     return normalized;
   } catch (error) {
     console.warn(`[Shopify API] getProduct(${handle}) failed, fallback to mock:`, error);
@@ -295,6 +395,7 @@ export async function addToCart(
               cost: {
                 totalAmount: { amount: String(1299 * newLine.quantity), currencyCode: 'INR' },
               },
+              attributes: (newLine.attributes || []).map((attr) => ({ key: attr.key, value: attr.value })),
               merchandise: {
                 id: newLine.merchandiseId,
                 title: 'Selected Variant',
@@ -502,3 +603,219 @@ export async function updateCartAttributes(
     return null;
   }
 }
+
+// ==========================================
+// Customer Authentication & Account APIs
+// 100% Native Shopify Storefront API
+// ==========================================
+
+export async function loginCustomer(
+  input: CustomerAccessTokenCreateInput
+): Promise<{ token: CustomerAccessToken | null; userErrors: ShopifyUserError[] }> {
+  if (!isShopifyConfigured()) {
+    return {
+      token: {
+        accessToken: `mock_token_${Date.now()}`,
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+      userErrors: [],
+    };
+  }
+
+  try {
+    const data = await shopifyFetch<CustomerAccessTokenCreateMutationResult>({
+      query: CUSTOMER_ACCESS_TOKEN_CREATE_MUTATION,
+      variables: { input },
+      revalidate: false,
+    });
+
+    return {
+      token: data.customerAccessTokenCreate.customerAccessToken,
+      userErrors: data.customerAccessTokenCreate.customerUserErrors || [],
+    };
+  } catch (error) {
+    console.error('[Shopify Auth API] loginCustomer failed:', error);
+    return {
+      token: null,
+      userErrors: [{ message: error instanceof Error ? error.message : 'Unable to connect to Shopify. Please try again.' }],
+    };
+  }
+}
+
+export async function registerCustomer(
+  input: CustomerCreateInput
+): Promise<{ customer: { id: string; email: string } | null; userErrors: ShopifyUserError[] }> {
+  if (!isShopifyConfigured()) {
+    return {
+      customer: {
+        id: `mock_customer_${Date.now()}`,
+        email: input.email,
+      },
+      userErrors: [],
+    };
+  }
+
+  try {
+    const data = await shopifyFetch<CustomerCreateMutationResult>({
+      query: CUSTOMER_CREATE_MUTATION,
+      variables: { input },
+      revalidate: false,
+    });
+
+    return {
+      customer: data.customerCreate.customer,
+      userErrors: data.customerCreate.customerUserErrors || [],
+    };
+  } catch (error) {
+    console.error('[Shopify Auth API] registerCustomer failed:', error);
+    return {
+      customer: null,
+      userErrors: [{ message: error instanceof Error ? error.message : 'Registration failed. Please try again.' }],
+    };
+  }
+}
+
+export async function logoutCustomer(
+  customerAccessToken: string
+): Promise<{ success: boolean; userErrors: ShopifyUserError[] }> {
+  if (!isShopifyConfigured() || customerAccessToken.startsWith('mock_token_')) {
+    return { success: true, userErrors: [] };
+  }
+
+  try {
+    const data = await shopifyFetch<CustomerAccessTokenDeleteMutationResult>({
+      query: CUSTOMER_ACCESS_TOKEN_DELETE_MUTATION,
+      variables: { customerAccessToken },
+      revalidate: false,
+    });
+
+    return {
+      success: Boolean(data.customerAccessTokenDelete.deletedAccessToken),
+      userErrors: data.customerAccessTokenDelete.userErrors || [],
+    };
+  } catch (error) {
+    console.error('[Shopify Auth API] logoutCustomer failed:', error);
+    return { success: false, userErrors: [] };
+  }
+}
+
+export async function getCustomer(
+  customerAccessToken: string
+): Promise<Customer | null> {
+  if (!isShopifyConfigured() || customerAccessToken.startsWith('mock_token_')) {
+    return {
+      id: 'mock_cust_01',
+      firstName: 'Sanctuary',
+      lastName: 'Connoisseur',
+      displayName: 'Sanctuary Connoisseur',
+      email: 'patron@moamlight.in',
+      phone: '+91 98765 43210',
+      defaultAddress: {
+        id: 'mock_addr_01',
+        address1: '14/2 Indiranagar 100ft Rd',
+        city: 'Bengaluru',
+        province: 'Karnataka',
+        zip: '560038',
+        country: 'India',
+        phone: '+91 98765 43210',
+      },
+      orders: {
+        edges: [
+          {
+            node: {
+              id: 'mock_order_101',
+              name: '#MOAM-1042',
+              orderNumber: 1042,
+              processedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+              financialStatus: 'PAID',
+              fulfillmentStatus: 'FULFILLED',
+              statusUrl: 'https://eyj01h-j3.myshopify.com',
+              totalPrice: { amount: '2598', currencyCode: 'INR' },
+              lineItems: {
+                edges: [
+                  {
+                    node: {
+                      title: 'Mysore Sandalwood & Amber (450g)',
+                      quantity: 1,
+                      variant: {
+                        id: 'v1',
+                        title: 'Grand 450g',
+                        price: { amount: '2199', currencyCode: 'INR' },
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        ],
+      },
+    };
+  }
+
+  try {
+    const data = await shopifyFetch<GetCustomerQueryResult>({
+      query: GET_CUSTOMER_QUERY,
+      variables: { customerAccessToken },
+      revalidate: false,
+    });
+
+    return data.customer;
+  } catch (error) {
+    console.warn('[Shopify Auth API] getCustomer failed:', error);
+    return null;
+  }
+}
+
+export async function recoverCustomerPassword(
+  email: string
+): Promise<{ success: boolean; userErrors: ShopifyUserError[] }> {
+  if (!isShopifyConfigured()) {
+    return { success: true, userErrors: [] };
+  }
+
+  try {
+    const data = await shopifyFetch<CustomerRecoverMutationResult>({
+      query: CUSTOMER_RECOVER_MUTATION,
+      variables: { email },
+      revalidate: false,
+    });
+
+    return {
+      success: (data.customerRecover.customerUserErrors || []).length === 0,
+      userErrors: data.customerRecover.customerUserErrors || [],
+    };
+  } catch (error) {
+    console.error('[Shopify Auth API] recoverCustomerPassword failed:', error);
+    return {
+      success: false,
+      userErrors: [{ message: error instanceof Error ? error.message : 'Unable to send recovery email.' }],
+    };
+  }
+}
+
+export async function updateCartBuyerIdentity(
+  cartId: string,
+  buyerIdentity: { customerAccessToken?: string; email?: string; phone?: string }
+): Promise<ShopifyCart | null> {
+  if (!isShopifyConfigured() || cartId.startsWith('mock_cart_')) {
+    return mockCartStorage.get(cartId) || null;
+  }
+
+  try {
+    const data = await shopifyFetch<CartBuyerIdentityUpdateMutationResult>({
+      query: CART_BUYER_IDENTITY_UPDATE_MUTATION,
+      variables: {
+        cartId,
+        buyerIdentity,
+      },
+      revalidate: false,
+    });
+
+    return data.cartBuyerIdentityUpdate.cart;
+  } catch (error) {
+    console.error('[Shopify Cart API] updateCartBuyerIdentity failed:', error);
+    return null;
+  }
+}
+

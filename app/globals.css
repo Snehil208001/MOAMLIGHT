@@ -5,8 +5,9 @@
 :root {
   --font-cormorant: 'Cormorant Garamond', Georgia, serif;
   --font-plus-jakarta: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-playfair: 'Playfair Display', Georgia, serif;
-  --font-inter: 'Inter', system-ui, sans-serif;
+  --font-playfair: var(--font-cormorant);
+  --font-inter: var(--font-plus-jakarta);
+  --font-montserrat: var(--font-plus-jakarta);
 
   /* Unified Warm Linen / Cream Light Palette */
   --bg-daynight: #FAF7F2;
@@ -21,7 +22,7 @@
 
 /* Base Body Aesthetic */
 html {
-  scroll-behavior: smooth;
+  /* Native scroll-behavior smooth is disabled to prevent fighting Lenis smooth scroll */
 }
 
 body {
@@ -177,3 +178,21 @@ header.sticky button {
     scroll-behavior: auto !important;
   }
 }
+
+/* Clean, Responsive Native System Cursor with Proper Affordance */
+a,
+button,
+[role="button"],
+.cursor-pointer {
+  cursor: pointer;
+}
+
+input,
+textarea {
+  cursor: text;
+}
+
+select {
+  cursor: pointer;
+}
+

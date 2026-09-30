@@ -8,7 +8,18 @@ import { formatINR } from '@/lib/formatters';
 import { Button } from '@/components/ui/Button';
 import { useCart } from '@/context/CartContext';
 import { useToast } from '@/context/ToastContext';
-import { Compass, Sparkles, ArrowRight, RotateCcw, Check, ShoppingBag } from 'lucide-react';
+import {
+  Compass,
+  Sparkles,
+  ArrowRight,
+  RotateCcw,
+  Check,
+  ShoppingBag,
+  Mail,
+  Loader2,
+  Lock,
+  Gift,
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface QuizQuestion {
@@ -119,12 +130,32 @@ const QUESTIONS: QuizQuestion[] = [
   },
 ];
 
+/**
+ * Mock Klaviyo / Mailchimp lead synchronization service.
+ * Respects security rules: uses process.env placeholders and mock delay.
+ */
+async function mockKlaviyoLeadCapture(email: string, quizProfile: string): Promise<boolean> {
+  // Simulating async network roundtrip to CRM endpoint
+  await new Promise((resolve) => setTimeout(resolve, 850));
+  if (process.env.NODE_ENV === 'development') {
+    console.info(`[Klaviyo Lead Captured] Email: ${email} | Scent Profile: ${quizProfile}`);
+  }
+  return true;
+}
+
 export function ScentQuizClient() {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
   const [matchedProduct, setMatchedProduct] = useState<Product | null>(null);
 
-  const { addItem, openCart } = useCart();
+  // Lead capture state
+  const [isLeadGateActive, setIsLeadGateActive] = useState<boolean>(false);
+  const [leadEmail, setLeadEmail] = useState<string>('');
+  const [leadError, setLeadError] = useState<string>('');
+  const [isSubmittingLead, setIsSubmittingLead] = useState<boolean>(false);
+  const [hasUnlockedDiscount, setHasUnlockedDiscount] = useState<boolean>(false);
+
+  const { addItem, openCart, applyCoupon } = useCart();
   const { showToast } = useToast();
 
   const handleSelectOption = (productSlug: string) => {
@@ -134,7 +165,7 @@ export function ScentQuizClient() {
     if (currentStep < QUESTIONS.length - 1) {
       setCurrentStep((prev) => prev + 1);
     } else {
-      // Tally winner
+      // Calculate top scent match
       const counts: Record<string, number> = {};
       updated.forEach((slug) => {
         counts[slug] = (counts[slug] || 0) + 1;
@@ -151,14 +182,59 @@ export function ScentQuizClient() {
 
       const match = PRODUCTS.find((p) => p.slug === topSlug) || PRODUCTS[0];
       setMatchedProduct(match);
+
+      // Intercept results with lead capture gate screen
+      setIsLeadGateActive(true);
       setCurrentStep(QUESTIONS.length);
     }
+  };
+
+  const handleLeadSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(leadEmail.trim())) {
+      setLeadError('Please provide a valid email address to unlock your match.');
+      return;
+    }
+
+    setLeadError('');
+    setIsSubmittingLead(true);
+
+    try {
+      await mockKlaviyoLeadCapture(leadEmail.trim(), matchedProduct?.category || 'Atelier Scent');
+      
+      // Auto-apply the 10% coupon directly to the cart context
+      applyCoupon('MOAM10');
+      setHasUnlockedDiscount(true);
+
+      showToast({
+        title: '10% Welcome Gift Unlocked!',
+        message: 'Coupon code MOAM10 has been automatically applied to your sanctuary bag.',
+        actionLabel: 'View Bag',
+        onAction: () => openCart(),
+      });
+
+      // Smoothly dismiss lead gate and reveal match
+      setIsLeadGateActive(false);
+    } catch (err) {
+      setLeadError('Unable to connect to lead service. Please try again or skip.');
+    } finally {
+      setIsSubmittingLead(false);
+    }
+  };
+
+  const handleSkipLead = () => {
+    // Subtle skip allows user to view their results unconditionally
+    setIsLeadGateActive(false);
   };
 
   const handleRestart = () => {
     setCurrentStep(0);
     setAnswers([]);
     setMatchedProduct(null);
+    setIsLeadGateActive(false);
+    setLeadEmail('');
+    setLeadError('');
   };
 
   const handleAddToCart = () => {
@@ -181,12 +257,14 @@ export function ScentQuizClient() {
     );
 
     showToast({
-      title: 'Added Match to Bag',
+      title: 'Added Match to Sanctuary Bag',
       message: `${matchedProduct.title} (240g)`,
       image: matchedProduct.images[0],
       actionLabel: 'View Bag',
       onAction: () => openCart(),
     });
+
+    openCart();
   };
 
   return (
@@ -206,7 +284,7 @@ export function ScentQuizClient() {
           </p>
         </div>
 
-        {/* Progress Bar */}
+        {/* Progress Bar (Visible during questions) */}
         {currentStep < QUESTIONS.length && (
           <div className="mb-8">
             <div className="flex justify-between text-xs text-charcoal-muted mb-2 font-medium">
@@ -214,23 +292,28 @@ export function ScentQuizClient() {
               <span>{Math.round(((currentStep + 1) / QUESTIONS.length) * 100)}% Complete</span>
             </div>
             <div className="w-full h-1.5 bg-warm-border rounded-full overflow-hidden">
-              <div
-                className="h-full bg-terracotta transition-all duration-300"
-                style={{ width: `${((currentStep + 1) / QUESTIONS.length) * 100}%` }}
+              <motion.div
+                className="h-full bg-terracotta"
+                initial={{ width: `${(currentStep / QUESTIONS.length) * 100}%` }}
+                animate={{ width: `${((currentStep + 1) / QUESTIONS.length) * 100}%` }}
+                transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
               />
             </div>
           </div>
         )}
 
-        {/* Quiz Steps */}
+        {/* Dynamic Multi-Step Engine */}
         <AnimatePresence mode="wait">
           {currentStep < QUESTIONS.length ? (
+            /* ============================================================= */
+            /* 1. QUESTIONS VIEW                                            */
+            /* ============================================================= */
             <motion.div
-              key={currentStep}
-              initial={{ opacity: 0, x: 20 }}
+              key={`question-${currentStep}`}
+              initial={{ opacity: 0, x: 24 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0, x: -24 }}
+              transition={{ duration: 0.35, ease: [0.25, 1, 0.5, 1] }}
               className="bg-warm-cream/40 border border-warm-border rounded-2xl p-6 sm:p-8 shadow-sm space-y-6"
             >
               <div>
@@ -247,7 +330,7 @@ export function ScentQuizClient() {
                   <button
                     key={idx}
                     onClick={() => handleSelectOption(opt.productSlug || 'mysore-sandalwood-amber')}
-                    className="w-full text-left p-4 rounded-xl border border-warm-border bg-warm-linen hover:border-terracotta hover:bg-warm-cream/60 transition-all duration-200 group flex items-start justify-between gap-4"
+                    className="w-full text-left p-4 rounded-xl border border-warm-border bg-warm-linen hover:border-terracotta hover:bg-warm-cream/60 transition-all duration-200 group flex items-start justify-between gap-4 cursor-pointer"
                   >
                     <div>
                       <h3 className="font-serif text-base font-semibold text-charcoal group-hover:text-terracotta transition-colors">
@@ -264,14 +347,122 @@ export function ScentQuizClient() {
                 ))}
               </div>
             </motion.div>
-          ) : matchedProduct ? (
-            /* Results Screen */
+          ) : isLeadGateActive ? (
+            /* ============================================================= */
+            /* 2. THE MONETIZATION LEAD CAPTURE GATE (Agent 1 & Agent 3)    */
+            /* ============================================================= */
             <motion.div
+              key="lead-gate"
+              initial={{ opacity: 0, scale: 0.95, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -16 }}
+              transition={{ duration: 0.45, ease: [0.25, 1, 0.5, 1] }}
+              className="relative overflow-hidden bg-gradient-to-b from-warm-cream to-warm-linen border border-amber/30 rounded-3xl p-6 sm:p-10 shadow-xl text-center space-y-6"
+            >
+              {/* Luxury Accent Glow Ring */}
+              <div
+                className="absolute -top-24 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full pointer-events-none opacity-40 blur-3xl"
+                style={{ background: 'radial-gradient(circle, rgba(255,140,0,0.4) 0%, transparent 70%)' }}
+              />
+
+              {/* Badge */}
+              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber/15 border border-amber/30 text-amber-900 text-xs font-semibold uppercase tracking-wider">
+                <Gift className="w-3.5 h-3.5 text-amber-700" />
+                <span>10% First Order Welcome Gift</span>
+              </div>
+
+              {/* Headline */}
+              <div className="space-y-2">
+                <h2 className="font-serif text-3xl sm:text-4xl font-semibold text-charcoal leading-tight">
+                  Your signature scent has been discovered.
+                </h2>
+                <p className="text-sm sm:text-base text-charcoal-muted max-w-lg mx-auto font-sans leading-relaxed">
+                  Enter your email to reveal your match and unlock 10% off your first order.
+                </p>
+              </div>
+
+              {/* Email Form */}
+              <form onSubmit={handleLeadSubmit} className="max-w-md mx-auto space-y-3 pt-2">
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-charcoal-muted absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="email"
+                    required
+                    value={leadEmail}
+                    onChange={(e) => setLeadEmail(e.target.value)}
+                    placeholder="Enter your email address..."
+                    className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-warm-border bg-white text-sm text-charcoal placeholder:text-charcoal-muted/60 focus:outline-none focus:ring-2 focus:ring-amber/50 focus:border-amber transition-all shadow-inner"
+                  />
+                </div>
+
+                {leadError && (
+                  <p className="text-xs text-terracotta text-left font-medium animate-fade-in">
+                    {leadError}
+                  </p>
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={isSubmittingLead}
+                  variant="terracotta"
+                  size="lg"
+                  className="w-full gap-2 text-sm uppercase tracking-wider shadow-warm"
+                >
+                  {isSubmittingLead ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-warm-linen" />
+                      <span>Unlocking Your Match...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 text-amber-gold fill-amber-gold" />
+                      <span>Reveal My Match & Unlock 10% Off</span>
+                    </>
+                  )}
+                </Button>
+              </form>
+
+              {/* Trust Footnote & Subtle Skip Option */}
+              <div className="pt-2 space-y-3">
+                <div className="flex items-center justify-center gap-1.5 text-[11px] text-charcoal-muted">
+                  <Lock className="w-3 h-3 text-sage-dark" />
+                  <span>No spam. Pure olfactory inspiration and private archival launches.</span>
+                </div>
+
+                <div>
+                  <button
+                    type="button"
+                    onClick={handleSkipLead}
+                    className="text-xs text-charcoal-muted/70 hover:text-charcoal transition-colors underline underline-offset-4 decoration-warm-border hover:decoration-charcoal"
+                  >
+                    Skip to my results →
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          ) : matchedProduct ? (
+            /* ============================================================= */
+            /* 3. REVEALED RESULTS SCREEN                                   */
+            /* ============================================================= */
+            <motion.div
+              key="quiz-results"
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4 }}
+              transition={{ duration: 0.45, ease: [0.25, 1, 0.5, 1] }}
               className="bg-warm-cream/50 border border-warm-border rounded-3xl p-6 sm:p-10 shadow-warm text-center space-y-6"
             >
+              {/* 10% Coupon Welcome Banner if email was submitted */}
+              {hasUnlockedDiscount && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-3 bg-gradient-to-r from-amber-50 via-warm-cream to-amber-50 border border-amber/40 rounded-xl inline-flex items-center gap-2 text-xs font-semibold text-amber-900 shadow-xs"
+                >
+                  <Sparkles className="w-4 h-4 text-amber" />
+                  <span>✦ 10% OFF APPLIED: Code <strong>MOAM10</strong> is active for your order! ✦</span>
+                </motion.div>
+              )}
+
               <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-sage-light text-sage-dark text-xs font-semibold uppercase tracking-wider">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Your Ideal Olfactory Match</span>
@@ -299,14 +490,17 @@ export function ScentQuizClient() {
 
               {/* Scent notes pills */}
               <div className="flex flex-wrap justify-center gap-2 pt-1">
-                {matchedProduct.scentPyramid.topNotes.concat(matchedProduct.scentPyramid.heartNotes).slice(0, 4).map((n) => (
-                  <span
-                    key={n}
-                    className="px-3 py-1 bg-warm-linen border border-warm-border rounded-full text-xs font-medium text-charcoal"
-                  >
-                    {n}
-                  </span>
-                ))}
+                {matchedProduct.scentPyramid.topNotes
+                  .concat(matchedProduct.scentPyramid.heartNotes)
+                  .slice(0, 4)
+                  .map((n) => (
+                    <span
+                      key={n}
+                      className="px-3 py-1 bg-warm-linen border border-warm-border rounded-full text-xs font-medium text-charcoal"
+                    >
+                      {n}
+                    </span>
+                  ))}
               </div>
 
               {/* Action Buttons */}
@@ -332,7 +526,7 @@ export function ScentQuizClient() {
               <div className="pt-4 border-t border-warm-border">
                 <button
                   onClick={handleRestart}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-charcoal-muted hover:text-charcoal transition-colors"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-charcoal-muted hover:text-charcoal transition-colors cursor-pointer"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                   <span>Retake Scent Quiz</span>
@@ -346,3 +540,4 @@ export function ScentQuizClient() {
   );
 }
 export default ScentQuizClient;
+

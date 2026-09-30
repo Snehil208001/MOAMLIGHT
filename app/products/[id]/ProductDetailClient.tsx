@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { ImageGallery } from '@/components/product/ImageGallery';
 import { VariantSelector } from '@/components/product/VariantSelector';
+import { EngravingStudioSelector } from '@/components/product/EngravingStudioSelector';
 import { PincodeEstimator } from '@/components/product/PincodeEstimator';
 import { ScentPyramidCard } from '@/components/product/ScentPyramidCard';
 import { SpecsGrid } from '@/components/product/SpecsGrid';
@@ -29,6 +30,7 @@ import {
   ChevronRight,
   HeartHandshake,
   Loader2,
+  Check,
 } from 'lucide-react';
 
 interface ProductDetailClientProps {
@@ -43,10 +45,44 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant>(product.variants[0]);
   const [quantity, setQuantity] = useState<number>(1);
   const [isBuyingNow, setIsBuyingNow] = useState<boolean>(false);
+  const [addToCartStatus, setAddToCartStatus] = useState<'idle' | 'loading' | 'success'>('idle');
+
+  // 3D Atelier & Bespoke Engraving State
+  const [isEngravingEnabled, setIsEngravingEnabled] = useState<boolean>(false);
+  const [engravingText, setEngravingText] = useState<string>('');
+  const [engravingFont, setEngravingFont] = useState<string>('serif');
+  const [galleryViewMode, setGalleryViewMode] = useState<'photo' | '3d'>('photo');
+
+  // Bespoke Engraving Add-On Fee (+$10 USD / ₹850 INR)
+  const ENGRAVING_FEE = 850;
+  const effectiveUnitPrice = selectedVariant.price + (isEngravingEnabled ? ENGRAVING_FEE : 0);
+  const effectiveTotalPrice = effectiveUnitPrice * quantity;
 
   const discount = calculateDiscount(selectedVariant.mrp, selectedVariant.price);
 
-  const handleAddToCart = () => {
+  // Match wax tint dynamically to artisanal Indian botanical note
+  const waxColor = React.useMemo(() => {
+    const cat = (product.category + ' ' + product.title).toLowerCase();
+    if (cat.includes('sandalwood') || cat.includes('oudh')) return '#FAF0DD';
+    if (cat.includes('saffron')) return '#FDEED9';
+    if (cat.includes('mitti') || cat.includes('vetiver')) return '#F7ECE1';
+    if (cat.includes('mogra') || cat.includes('jasmine')) return '#FFFDF8';
+    return '#FFFDF8';
+  }, [product.category, product.title]);
+
+  const activeEngravingText = isEngravingEnabled && engravingText.trim() ? engravingText.trim() : undefined;
+  const activeEngravingFont = activeEngravingText
+    ? (engravingFont === 'script' ? 'Poetic Script' : engravingFont === 'sans' ? 'Modern Sans' : 'Royal Atelier Serif')
+    : undefined;
+
+  const handleAddToCart = async () => {
+    if (addToCartStatus !== 'idle') return;
+
+    setAddToCartStatus('loading');
+
+    // Tactile micro-delay for smooth UX feedback
+    await new Promise((resolve) => setTimeout(resolve, 380));
+
     addItem(
       {
         productId: product.id,
@@ -54,21 +90,33 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
         scentProfile: product.category,
         variantId: selectedVariant.id,
         variantName: selectedVariant.name,
-        price: selectedVariant.price,
-        mrp: selectedVariant.mrp,
+        price: effectiveUnitPrice,
+        mrp: selectedVariant.mrp + (isEngravingEnabled ? ENGRAVING_FEE : 0),
         image: product.images[0],
         weightGrams: selectedVariant.weightGrams,
+        engravingText: activeEngravingText,
+        engravingFont: activeEngravingFont,
       },
       quantity
     );
 
+    setAddToCartStatus('success');
+
     showToast({
       title: 'Added to Sanctuary Bag',
-      message: `${quantity} × ${product.title} (${selectedVariant.name})`,
+      message: `${quantity} × ${product.title} (${selectedVariant.name})${activeEngravingText ? ` · Engraved: "${activeEngravingText}"` : ''}`,
       image: product.images[0],
       actionLabel: 'View Bag',
       onAction: () => openCart(),
     });
+
+    // Immediately slide open the Cart Drawer as required in Task 4!
+    openCart();
+
+    // Auto revert micro-interaction button state back to idle
+    setTimeout(() => {
+      setAddToCartStatus('idle');
+    }, 1500);
   };
 
   const handleBuyNow = async () => {
@@ -81,10 +129,12 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
           scentProfile: product.category,
           variantId: selectedVariant.id,
           variantName: selectedVariant.name,
-          price: selectedVariant.price,
-          mrp: selectedVariant.mrp,
+          price: effectiveUnitPrice,
+          mrp: selectedVariant.mrp + (isEngravingEnabled ? ENGRAVING_FEE : 0),
           image: product.images[0],
           weightGrams: selectedVariant.weightGrams,
+          engravingText: activeEngravingText,
+          engravingFont: activeEngravingFont,
         },
         quantity
       );
@@ -109,6 +159,9 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
         product={product}
         selectedVariant={selectedVariant}
         quantity={quantity}
+        engravingText={activeEngravingText}
+        engravingFont={activeEngravingFont}
+        customPrice={effectiveUnitPrice}
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -127,9 +180,17 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
         {/* Top Section: Gallery + Product Action Info */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
-          {/* Gallery (7 cols on desktop) */}
+          {/* Gallery with 3D Studio Toggle (7 cols on desktop) */}
           <div className="lg:col-span-7">
-            <ImageGallery images={product.images} title={product.title} />
+            <ImageGallery
+              images={product.images}
+              title={product.title}
+              viewMode={galleryViewMode}
+              onViewModeChange={setGalleryViewMode}
+              engravingText={isEngravingEnabled ? engravingText : ''}
+              engravingFont={engravingFont}
+              waxColor={waxColor}
+            />
           </div>
 
           {/* Product Purchase Column (5 cols on desktop) */}
@@ -158,17 +219,22 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
             {/* Price Row */}
             <div className="p-4 rounded-xl bg-warm-cream/50 border border-warm-border space-y-1">
-              <div className="flex items-baseline gap-3">
+              <div className="flex items-baseline gap-3 flex-wrap">
                 <span className="font-serif text-3xl font-bold text-charcoal">
-                  {formatINR(selectedVariant.price)}
+                  {formatINR(effectiveUnitPrice)}
                 </span>
                 <span className="text-sm text-charcoal-muted line-through">
-                  {formatINR(selectedVariant.mrp)}
+                  {formatINR(selectedVariant.mrp + (isEngravingEnabled ? ENGRAVING_FEE : 0))}
                 </span>
                 {discount > 0 && (
                   <Badge variant="amber">
                     Save {discount}% ({formatINR(selectedVariant.mrp - selectedVariant.price)})
                   </Badge>
+                )}
+                {isEngravingEnabled && (
+                  <span className="text-[11px] font-semibold text-amber-900 bg-amber/20 px-2 py-0.5 rounded-full border border-amber/30">
+                    Includes ₹850 ($10) Bespoke Engraving
+                  </span>
                 )}
               </div>
               <p className="text-[11px] text-charcoal-muted">
@@ -181,6 +247,22 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               variants={product.variants}
               selectedVariant={selectedVariant}
               onSelectVariant={setSelectedVariant}
+            />
+
+            {/* Bespoke Real-Time 3D Engraving Studio */}
+            <EngravingStudioSelector
+              isEngravingEnabled={isEngravingEnabled}
+              onToggleEngraving={(enabled) => {
+                setIsEngravingEnabled(enabled);
+                if (enabled) {
+                  setGalleryViewMode('3d');
+                }
+              }}
+              engravingText={engravingText}
+              onTextChange={setEngravingText}
+              engravingFont={engravingFont}
+              onFontChange={setEngravingFont}
+              onPreview3D={() => setGalleryViewMode('3d')}
             />
 
             {/* Quantity Stepper & Add To Cart CTAs */}
@@ -209,12 +291,27 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
                 <Button
                   onClick={handleAddToCart}
+                  disabled={addToCartStatus !== 'idle'}
                   variant="terracotta"
                   size="lg"
-                  className="flex-1 gap-2"
+                  className="flex-1 gap-2 transition-all duration-300 relative overflow-hidden"
                 >
-                  <ShoppingBag className="w-4 h-4" />
-                  <span>Add to Bag • {formatINR(selectedVariant.price * quantity)}</span>
+                  {addToCartStatus === 'loading' ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-warm-linen" />
+                      <span>Adding to Sanctuary...</span>
+                    </>
+                  ) : addToCartStatus === 'success' ? (
+                    <>
+                      <Check className="w-4 h-4 text-emerald-300 stroke-[3]" />
+                      <span className="font-semibold text-white tracking-wide">Added ✓</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingBag className="w-4 h-4" />
+                      <span>Add to Bag • {formatINR(effectiveTotalPrice)}</span>
+                    </>
+                  )}
                 </Button>
               </div>
 

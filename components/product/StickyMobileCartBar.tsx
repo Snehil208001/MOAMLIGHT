@@ -12,16 +12,24 @@ interface StickyMobileCartBarProps {
   product: Product;
   selectedVariant: ProductVariant;
   quantity: number;
+  engravingText?: string;
+  engravingFont?: string;
+  customPrice?: number;
 }
 
 export const StickyMobileCartBar: React.FC<StickyMobileCartBarProps> = ({
   product,
   selectedVariant,
   quantity,
+  engravingText,
+  engravingFont,
+  customPrice,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const { addItem, openCart } = useCart();
   const { showToast } = useToast();
+
+  const currentPrice = customPrice !== undefined ? customPrice : selectedVariant.price;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,21 +53,25 @@ export const StickyMobileCartBar: React.FC<StickyMobileCartBarProps> = ({
         scentProfile: product.category,
         variantId: selectedVariant.id,
         variantName: selectedVariant.name,
-        price: selectedVariant.price,
+        price: currentPrice,
         mrp: selectedVariant.mrp,
         image: product.images[0],
         weightGrams: selectedVariant.weightGrams,
+        engravingText,
+        engravingFont,
       },
       quantity
     );
 
     showToast({
       title: 'Added to Sanctuary Bag',
-      message: `${product.title} (${selectedVariant.name})`,
+      message: `${product.title} (${selectedVariant.name})${engravingText ? ` · Engraved: "${engravingText}"` : ''}`,
       image: product.images[0],
       actionLabel: 'View Bag',
       onAction: () => openCart(),
     });
+
+    openCart();
   };
 
   return (

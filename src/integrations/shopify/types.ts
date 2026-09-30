@@ -143,6 +143,7 @@ export interface ShopifyCartLine {
   cost: {
     totalAmount: ShopifyMoney;
   };
+  attributes?: ShopifyCartAttribute[];
   merchandise: ShopifyCartLineMerchandise;
 }
 
@@ -267,14 +268,136 @@ export interface GetCartQueryResult {
   cart: ShopifyCart | null;
 }
 
-// ==========================================
-// Client Fetch Options
-// ==========================================
-
 export interface ShopifyFetchOptions<V = Record<string, unknown>> {
   query: string;
   variables?: V;
   tags?: string[];
   revalidate?: number | false;
   cache?: RequestCache;
+}
+
+// ==========================================
+// Customer & Authentication Types
+// ==========================================
+
+export interface CustomerAccessToken {
+  accessToken: string;
+  expiresAt: string;
+}
+
+export interface CustomerAddress {
+  id: string;
+  address1?: string | null;
+  address2?: string | null;
+  city?: string | null;
+  province?: string | null;
+  zip?: string | null;
+  country?: string | null;
+  phone?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  name?: string | null;
+}
+
+export interface CustomerOrderLineItem {
+  title: string;
+  quantity: number;
+  variant?: {
+    id: string;
+    title: string;
+    price: ShopifyMoney;
+    image?: ShopifyImage | null;
+  } | null;
+}
+
+export interface CustomerOrder {
+  id: string;
+  name: string;
+  orderNumber: number;
+  processedAt: string;
+  financialStatus: string;
+  fulfillmentStatus: string;
+  totalPrice: ShopifyMoney;
+  statusUrl?: string | null;
+  lineItems: {
+    edges: {
+      node: CustomerOrderLineItem;
+    }[];
+  };
+}
+
+export interface Customer {
+  id: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  displayName?: string | null;
+  email: string;
+  phone?: string | null;
+  defaultAddress?: CustomerAddress | null;
+  addresses?: {
+    edges: {
+      node: CustomerAddress;
+    }[];
+  };
+  orders?: {
+    edges: {
+      node: CustomerOrder;
+    }[];
+  };
+}
+
+export interface CustomerCreateInput {
+  email: string;
+  password: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  acceptsMarketing?: boolean;
+}
+
+export interface CustomerAccessTokenCreateInput {
+  email: string;
+  password: string;
+}
+
+export interface CustomerCreateMutationResult {
+  customerCreate: {
+    customer: {
+      id: string;
+      email: string;
+    } | null;
+    customerUserErrors: ShopifyUserError[];
+  };
+}
+
+export interface CustomerAccessTokenCreateMutationResult {
+  customerAccessTokenCreate: {
+    customerAccessToken: CustomerAccessToken | null;
+    customerUserErrors: ShopifyUserError[];
+  };
+}
+
+export interface CustomerAccessTokenDeleteMutationResult {
+  customerAccessTokenDelete: {
+    deletedAccessToken: string | null;
+    deletedCustomerAccessTokenId: string | null;
+    userErrors: ShopifyUserError[];
+  };
+}
+
+export interface CustomerRecoverMutationResult {
+  customerRecover: {
+    customerUserErrors: ShopifyUserError[];
+  };
+}
+
+export interface GetCustomerQueryResult {
+  customer: Customer | null;
+}
+
+export interface CartBuyerIdentityUpdateMutationResult {
+  cartBuyerIdentityUpdate: {
+    cart: ShopifyCart | null;
+    userErrors: ShopifyUserError[];
+  };
 }

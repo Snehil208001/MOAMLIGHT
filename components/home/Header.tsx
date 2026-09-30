@@ -3,20 +3,23 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import { Modal } from '@/components/ui/Modal';
 import { PRODUCTS } from '@/data/products';
-import { formatINR } from '@/lib/formatters';
-import { Search, ShoppingBag, Menu, X, Flame, ArrowRight, User } from 'lucide-react';
+import { formatINR, getOptimizedImageUrl } from '@/lib/formatters';
+import { Search, ShoppingBag, Menu, X, Flame, ArrowRight, User, LogOut, Package, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDayNight } from '@/components/animation/DayNightScrollController';
 
 export const Header: React.FC = () => {
   const { totalItemsCount, openCart } = useCart();
+  const { customer, isAuthenticated, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { isNightMode } = useDayNight();
-  const accountUrl = process.env.NEXT_PUBLIC_SHOPIFY_CUSTOMER_ACCOUNT_URL || 'https://shopify.com/79258517672/account';
+  const accountUrl = process.env.NEXT_PUBLIC_SHOPIFY_CUSTOMER_ACCOUNT_URL || 'https://eyj01h-j3.myshopify.com/account/login';
 
   const filteredProducts = searchQuery.trim()
     ? PRODUCTS.filter((p) => {
@@ -51,13 +54,13 @@ export const Header: React.FC = () => {
 
               {/* Desktop Navigation Left */}
               <nav className="hidden lg:flex items-center gap-8 text-xs font-medium uppercase tracking-[0.08em]">
-                <Link href="/products" className="hover:text-amber-500 transition-colors cursor-pointer">
+                <Link href="/products" prefetch={true} className="hover:text-amber-500 transition-colors cursor-pointer">
                   All Candles
                 </Link>
                 <Link href="/#scents" className="hover:text-amber-500 transition-colors cursor-pointer">
                   Fragrance Moods
                 </Link>
-                <Link href="/quiz" className="hover:text-amber-500 transition-colors flex items-center gap-1 cursor-pointer">
+                <Link href="/quiz" prefetch={true} className="hover:text-amber-500 transition-colors flex items-center gap-1 cursor-pointer">
                   <span>Scent Quiz</span>
                   <span className="text-[10px] bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded-full font-bold">NEW</span>
                 </Link>
@@ -66,7 +69,7 @@ export const Header: React.FC = () => {
 
             {/* Brand Logo (True Absolute Center - Scaled for Mobile) */}
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center flex justify-center pointer-events-auto z-10">
-              <Link href="/" className="inline-flex items-center gap-1.5 sm:gap-2 group cursor-pointer whitespace-nowrap">
+              <Link href="/" prefetch={true} className="inline-flex items-center gap-1.5 sm:gap-2 group cursor-pointer whitespace-nowrap">
                 <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-transparent flex items-center justify-center border border-[var(--border-daynight)] group-hover:scale-105 transition-transform shrink-0">
                   <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 fill-amber-500" />
                 </span>
@@ -79,7 +82,7 @@ export const Header: React.FC = () => {
             {/* Desktop Navigation Right & Actions */}
             <div className="flex items-center gap-1.5 sm:gap-4 lg:gap-6 ml-auto">
               <nav className="hidden lg:flex items-center gap-8 text-xs font-medium uppercase tracking-[0.08em]">
-                <Link href="/about" className="hover:text-amber-500 transition-colors cursor-pointer">
+                <Link href="/about" prefetch={true} className="hover:text-amber-500 transition-colors cursor-pointer">
                   Artisan Story
                 </Link>
               </nav>
@@ -94,14 +97,87 @@ export const Header: React.FC = () => {
               </button>
 
               {/* Customer Account & Orders */}
-              <a
-                href={accountUrl}
-                className="hidden sm:flex p-2 sm:p-2.5 hover:text-amber-500 transition-colors cursor-pointer min-w-[40px] min-h-[40px] items-center justify-center"
-                aria-label="Customer account and order history"
-                title="Sign In / My Account"
-              >
-                <User className="w-4 h-4 sm:w-5 sm:h-5" />
-              </a>
+              {isAuthenticated ? (
+                <div className="relative hidden sm:block">
+                  <button
+                    onClick={() => setAccountMenuOpen((prev) => !prev)}
+                    className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1.5 rounded-full border border-[var(--border-daynight)] hover:border-amber-500/50 bg-warm-cream/30 hover:bg-warm-cream/50 transition-colors cursor-pointer text-xs"
+                    aria-label="Customer sanctuary account menu"
+                  >
+                    <span className="w-6 h-6 rounded-full bg-amber-500/10 text-amber-600 font-serif font-bold text-xs flex items-center justify-center shrink-0">
+                      {customer?.firstName ? customer.firstName.charAt(0).toUpperCase() : 'M'}
+                    </span>
+                    <span className="hidden md:inline font-medium text-xs tracking-wide">
+                      {customer?.firstName || 'Sanctuary'}
+                    </span>
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  <AnimatePresence>
+                    {accountMenuOpen && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-40"
+                          onClick={() => setAccountMenuOpen(false)}
+                        />
+                        <motion.div
+                          initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute right-0 top-full mt-2 w-64 rounded-xl bg-warm-cream border border-warm-border shadow-xl p-3 z-50 text-charcoal font-sans"
+                        >
+                          <div className="pb-2 mb-2 border-b border-warm-border/60 px-2">
+                            <p className="text-[10px] uppercase font-bold tracking-widest text-charcoal-muted">MOAMLIGHT Sanctuary</p>
+                            <p className="text-sm font-medium font-serif truncate mt-0.5">
+                              {customer?.firstName} {customer?.lastName}
+                            </p>
+                            <p className="text-xs text-charcoal-muted truncate">{customer?.email}</p>
+                          </div>
+
+                          <div className="space-y-1 text-xs">
+                            <Link
+                              href="/account"
+                              onClick={() => setAccountMenuOpen(false)}
+                              className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-white/80 transition-colors text-charcoal"
+                            >
+                              <Package className="w-4 h-4 text-terracotta" />
+                              <span>Orders & Consignments</span>
+                            </Link>
+                            <Link
+                              href="/account"
+                              onClick={() => setAccountMenuOpen(false)}
+                              className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-white/80 transition-colors text-charcoal"
+                            >
+                              <Sparkles className="w-4 h-4 text-amber-500" />
+                              <span>Member Privileges</span>
+                            </Link>
+                            <button
+                              onClick={async () => {
+                                setAccountMenuOpen(false);
+                                await logout();
+                              }}
+                              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-red-50 hover:text-red-700 transition-colors text-charcoal-muted text-left cursor-pointer"
+                            >
+                              <LogOut className="w-4 h-4 text-red-500" />
+                              <span>Sign Out</span>
+                            </button>
+                          </div>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <a
+                  href={accountUrl}
+                  className="hidden sm:flex p-2 sm:p-2.5 hover:text-amber-500 transition-colors cursor-pointer min-w-[40px] min-h-[40px] items-center justify-center"
+                  aria-label="Sign In with Email or Phone OTP (Shopify)"
+                  title="Sign In with Email or Phone OTP"
+                >
+                  <User className="w-4 h-4 sm:w-5 sm:h-5" />
+                </a>
+              )}
 
               {/* Cart Drawer Trigger */}
               <button
@@ -164,6 +240,7 @@ export const Header: React.FC = () => {
                 <nav className="mt-8 flex flex-col gap-6 text-sm font-semibold uppercase tracking-wider text-charcoal">
                   <Link
                     href="/products"
+                    prefetch={true}
                     onClick={() => setMobileMenuOpen(false)}
                     className="hover:text-terracotta transition-colors flex items-center justify-between"
                   >
@@ -180,6 +257,7 @@ export const Header: React.FC = () => {
                   </Link>
                   <Link
                     href="/quiz"
+                    prefetch={true}
                     onClick={() => setMobileMenuOpen(false)}
                     className="hover:text-terracotta transition-colors flex items-center justify-between text-terracotta"
                   >
@@ -188,22 +266,63 @@ export const Header: React.FC = () => {
                   </Link>
                   <Link
                     href="/about"
+                    prefetch={true}
                     onClick={() => setMobileMenuOpen(false)}
                     className="hover:text-terracotta transition-colors flex items-center justify-between"
                   >
                     <span>Our Artisan Story</span>
                     <ArrowRight className="w-4 h-4 text-charcoal-muted" />
                   </Link>
-                  <a
-                    href={accountUrl}
-                    className="hover:text-terracotta transition-colors flex items-center justify-between pt-3 border-t border-warm-border/60"
-                  >
-                    <span className="flex items-center gap-2 normal-case font-medium">
-                      <User className="w-4 h-4 text-terracotta" />
-                      Sign In / My Account
-                    </span>
-                    <ArrowRight className="w-4 h-4 text-charcoal-muted" />
-                  </a>
+                  {isAuthenticated ? (
+                    <div className="pt-3 border-t border-warm-border/60 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <span className="w-8 h-8 rounded-full bg-amber-500/15 text-amber-600 font-serif font-bold text-sm flex items-center justify-center shrink-0">
+                            {customer?.firstName ? customer.firstName.charAt(0).toUpperCase() : 'M'}
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-xs font-serif font-semibold truncate text-charcoal">
+                              {customer?.firstName} {customer?.lastName}
+                            </p>
+                            <p className="text-[11px] text-charcoal-muted truncate max-w-[160px]">
+                              {customer?.email}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={async () => {
+                            setMobileMenuOpen(false);
+                            await logout();
+                          }}
+                          className="text-[11px] text-red-600 hover:underline cursor-pointer font-sans"
+                        >
+                          Sign Out
+                        </button>
+                      </div>
+                      <Link
+                        href="/account"
+                        prefetch={true}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="w-full flex items-center justify-between py-2 px-3 rounded-lg bg-warm-cream/70 text-xs font-medium text-terracotta border border-warm-border/50 hover:bg-warm-cream transition-colors"
+                      >
+                        <span>Sanctuary Dashboard</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </Link>
+                    </div>
+                  ) : (
+                    <a
+                      href={accountUrl}
+                      className="hover:text-terracotta transition-colors flex items-center justify-between pt-3 border-t border-warm-border/60"
+                    >
+                      <span className="flex items-center gap-2 normal-case font-medium">
+                        <User className="w-4 h-4 text-terracotta" />
+                        Sign In with Email / Phone OTP
+                      </span>
+                      <span className="text-[10px] bg-amber-500/15 text-amber-700 px-2 py-0.5 rounded font-mono font-medium">
+                        Shopify OTP
+                      </span>
+                    </a>
+                  )}
                 </nav>
               </div>
 
@@ -274,8 +393,10 @@ export const Header: React.FC = () => {
                     className="flex items-center gap-4 py-3 px-2 rounded-lg hover:bg-warm-cream/60 transition-colors group"
                   >
                     <img
-                      src={p.images[0]}
+                      src={getOptimizedImageUrl(p.images[0], 120, 75)}
                       alt={p.title}
+                      loading="lazy"
+                      decoding="async"
                       className="w-12 h-14 object-cover rounded-md border border-warm-border"
                     />
                     <div className="flex-1 min-w-0">

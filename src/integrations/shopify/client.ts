@@ -53,12 +53,11 @@ export async function shopifyFetch<T, V = Record<string, unknown>>({
     method: 'POST',
     headers,
     body: JSON.stringify({ query, variables }),
+    signal: AbortSignal.timeout(5000),
   };
 
   // Next.js ISR caching options
-  // In development, always fetch fresh data from Shopify so price & inventory changes reflect immediately.
-  const isDev = process.env.NODE_ENV === 'development';
-  if (isDev || revalidate === false || revalidate === 0) {
+  if (revalidate === false || revalidate === 0) {
     fetchOptions.cache = 'no-store';
   } else {
     // Next.js extended RequestInit

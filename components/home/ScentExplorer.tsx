@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { ScentCategory, Product } from '@/types/product';
 import { PRODUCTS } from '@/data/products';
-import { formatINR } from '@/lib/formatters';
+import { formatINR, getOptimizedImageUrl } from '@/lib/formatters';
 import { StarRating } from '@/components/ui/StarRating';
 import { ArrowRight, Compass, Flame, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -148,8 +148,10 @@ export const ScentExplorer: React.FC<ScentExplorerProps> = ({ products = PRODUCT
               >
                 <div className="w-full sm:w-48 h-56 sm:h-auto rounded-xl overflow-hidden bg-warm-cream/20 shrink-0 border border-warm-border/50 relative">
                   <img
-                    src={product.images[0]}
+                    src={getOptimizedImageUrl(product.images[0], 480, 75)}
                     alt={product.title}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -208,7 +210,8 @@ export const ScentExplorer: React.FC<ScentExplorerProps> = ({ products = PRODUCT
 
                     <Link
                       href={`/products/${product.slug}`}
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-amber hover:text-amber-glow group-hover:translate-x-0.5 transition-transform"
+                      prefetch={true}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-amber hover:text-amber-glow active:scale-95 group-hover:translate-x-0.5 transition-all cursor-pointer select-none"
                     >
                       <span>Experience</span>
                       <ArrowRight className="w-3.5 h-3.5" />

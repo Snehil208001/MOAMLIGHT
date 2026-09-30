@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { getProducts, getProduct } from '@/src/integrations/shopify';
 import ProductDetailClient from './ProductDetailClient';
 
-export const revalidate = 0; // Real-time live prices directly from Shopify
+export const revalidate = 60; // Instant cached serving with background revalidation
 
 interface PageProps {
   params: {

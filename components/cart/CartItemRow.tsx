@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { CartItem } from '@/types/cart';
 import { useCart } from '@/context/CartContext';
-import { formatINR } from '@/lib/formatters';
+import { formatINR, getOptimizedImageUrl } from '@/lib/formatters';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 
 interface CartItemRowProps {
@@ -23,8 +23,10 @@ export const CartItemRow: React.FC<CartItemRowProps> = ({ item }) => {
         className="w-20 h-24 rounded-lg overflow-hidden shrink-0 bg-warm-cream border border-warm-border group"
       >
         <img
-          src={item.image}
+          src={getOptimizedImageUrl(item.image, 160, 75)}
           alt={item.title}
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
       </Link>
@@ -42,6 +44,18 @@ export const CartItemRow: React.FC<CartItemRowProps> = ({ item }) => {
                 {item.title}
               </Link>
               <p className="text-xs text-charcoal-muted mt-0.5">{item.variantName}</p>
+              {item.engravingText && (
+                <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-gradient-to-r from-amber-50 to-amber-100/60 border border-amber-300/80 shadow-xs text-xs text-charcoal">
+                  <span className="text-amber-600 font-bold">✦</span>
+                  <span className="font-semibold text-amber-950 font-sans">Engraved:</span>
+                  <span className="font-serif italic font-semibold text-amber-900">&ldquo;{item.engravingText}&rdquo;</span>
+                  {item.engravingFont && (
+                    <span className="text-[10px] text-amber-800/80 font-sans">
+                      ({item.engravingFont})
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
             <button
               onClick={() => removeItem(item.id)}

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Product } from '@/types/product';
 import { useCart } from '@/context/CartContext';
 import { useToast } from '@/context/ToastContext';
-import { formatINR, calculateDiscount } from '@/lib/formatters';
+import { formatINR, calculateDiscount, getOptimizedImageUrl } from '@/lib/formatters';
 import { StarRating } from '@/components/ui/StarRating';
 import { Badge } from '@/components/ui/Badge';
 import { ShoppingBag, ArrowRight, Flame } from 'lucide-react';
@@ -79,7 +79,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) 
         {/* Visual Container (4:5 Aspect Ratio) */}
         <Link
           href={`/products/${product.slug}`}
-          className="relative aspect-[4/5] overflow-hidden bg-warm-cream/30 block"
+          prefetch={true}
+          className="relative aspect-[4/5] overflow-hidden bg-warm-cream/30 block cursor-pointer"
         >
           {/* Badges Overlay */}
           <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5 items-start">
@@ -98,7 +99,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) 
 
           {/* Primary Image */}
           <img
-            src={product.images[0]}
+            src={getOptimizedImageUrl(product.images[0], 600, 75)}
             alt={product.title}
             loading="lazy"
             decoding="async"
@@ -110,7 +111,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) 
           {/* Secondary Lifestyle Image on Hover */}
           {product.images[1] && (
             <img
-              src={product.images[1]}
+              src={getOptimizedImageUrl(product.images[1], 600, 75)}
               alt={`${product.title} atmospheric lifestyle`}
               loading="lazy"
               decoding="async"
@@ -154,7 +155,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) 
             {/* Title */}
             <Link
               href={`/products/${product.slug}`}
-              className="block group-hover:text-amber transition-colors"
+              prefetch={true}
+              className="block group-hover:text-amber transition-colors cursor-pointer"
             >
               <h3 className="font-serif text-xl font-semibold leading-snug line-clamp-1">
                 {product.title}
@@ -197,7 +199,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) 
 
             <Link
               href={`/products/${product.slug}`}
-              className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-amber hover:text-amber-glow transition-colors"
+              prefetch={true}
+              className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-amber hover:text-amber-glow active:scale-90 transition-all cursor-pointer select-none"
             >
               <span>View</span>
               <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
