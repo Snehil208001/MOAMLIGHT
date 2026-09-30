@@ -51,7 +51,6 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const [isEngravingEnabled, setIsEngravingEnabled] = useState<boolean>(false);
   const [engravingText, setEngravingText] = useState<string>('');
   const [engravingFont, setEngravingFont] = useState<string>('serif');
-  const [galleryViewMode, setGalleryViewMode] = useState<'photo' | '3d'>('photo');
 
   // Bespoke Engraving Add-On Fee (+$10 USD / ₹850 INR)
   const ENGRAVING_FEE = 850;
@@ -59,16 +58,6 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const effectiveTotalPrice = effectiveUnitPrice * quantity;
 
   const discount = calculateDiscount(selectedVariant.mrp, selectedVariant.price);
-
-  // Match wax tint dynamically to artisanal Indian botanical note
-  const waxColor = React.useMemo(() => {
-    const cat = (product.category + ' ' + product.title).toLowerCase();
-    if (cat.includes('sandalwood') || cat.includes('oudh')) return '#FAF0DD';
-    if (cat.includes('saffron')) return '#FDEED9';
-    if (cat.includes('mitti') || cat.includes('vetiver')) return '#F7ECE1';
-    if (cat.includes('mogra') || cat.includes('jasmine')) return '#FFFDF8';
-    return '#FFFDF8';
-  }, [product.category, product.title]);
 
   const activeEngravingText = isEngravingEnabled && engravingText.trim() ? engravingText.trim() : undefined;
   const activeEngravingFont = activeEngravingText
@@ -184,13 +173,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
           <div className="lg:col-span-7">
             <ImageGallery
               images={product.images}
+              videos={product.videos}
               title={product.title}
-              viewMode={galleryViewMode}
-              onViewModeChange={setGalleryViewMode}
-              engravingText={isEngravingEnabled ? engravingText : ''}
-              engravingFont={engravingFont}
-              waxColor={waxColor}
-              productSlug={product.slug}
             />
           </div>
 
@@ -253,17 +237,11 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             {/* Bespoke Real-Time 3D Engraving Studio */}
             <EngravingStudioSelector
               isEngravingEnabled={isEngravingEnabled}
-              onToggleEngraving={(enabled) => {
-                setIsEngravingEnabled(enabled);
-                if (enabled) {
-                  setGalleryViewMode('3d');
-                }
-              }}
+              onToggleEngraving={setIsEngravingEnabled}
               engravingText={engravingText}
               onTextChange={setEngravingText}
               engravingFont={engravingFont}
               onFontChange={setEngravingFont}
-              onPreview3D={() => setGalleryViewMode('3d')}
             />
 
             {/* Quantity Stepper & Add To Cart CTAs */}

@@ -101,45 +101,27 @@ export const EngravableCandleViewer: React.FC<EngravableCandleViewerProps> = ({
           {isNightMode && <fog attach="fog" args={['#0C0A09', 5, 20]} />}
 
           {/* HDR Environment preset for realistic dynamic metallic reflections */}
-          <Environment preset="sunset" />
+          <Environment preset={isLotus ? 'studio' : 'sunset'} />
 
           <Suspense fallback={null}>
             {/* Zero-latency local studio lighting hierarchy */}
             <ambientLight
-              intensity={isNightMode ? 0.35 : 0.85}
+              intensity={isNightMode ? 0.35 : isLotus ? 0.5 : 0.85}
               color={isNightMode ? '#221c2e' : '#FFF9F2'}
             />
 
             <directionalLight
               position={[4, 6, 3]}
-              intensity={isNightMode ? 0.5 : 1.3}
+              intensity={isNightMode ? 0.5 : isLotus ? 0.8 : 1.3}
               color={isNightMode ? '#FFE8C8' : '#FFFDF7'}
               castShadow
             />
 
             <directionalLight
               position={[-4, 3, -3]}
-              intensity={0.6}
+              intensity={isLotus ? 0.35 : 0.6}
               color="#FFE0B2"
             />
-
-            {/* Warm overhead key light and bounce light for metallic gold dish highlights */}
-            {isLotus && (
-              <>
-                <pointLight
-                  position={[0, 2.8, 2.0]}
-                  intensity={1.8}
-                  color="#FFF8E0"
-                  distance={5}
-                />
-                <pointLight
-                  position={[0, -1.5, 0.5]}
-                  intensity={0.9}
-                  color="#D4AF37"
-                  distance={3}
-                />
-              </>
-            )}
 
             {/* Model Switcher: Artisan Lotus Candle vs Classic Frosted Jar Candle */}
             {isLotus ? (

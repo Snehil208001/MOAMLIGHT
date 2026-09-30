@@ -7,7 +7,7 @@
  * - CartItem (types/cart.ts)
  */
 
-import { Product, ProductVariant, ScentCategory, CandleSpecs, ScentPyramid } from '@/types/product';
+import { Product, ProductVariant, ScentCategory, CandleSpecs, ScentPyramid, ProductVideo } from '@/types/product';
 import { CartItem } from '@/types/cart';
 import {
   ShopifyProduct,
@@ -160,10 +160,21 @@ export function normalizeProduct(node: ShopifyProduct): Product {
     ? Math.round(parseFloat(node.compareAtPriceRange.minVariantPrice.amount))
     : (matchedLocal ? matchedLocal.defaultMrp : Math.round(defaultPrice * 1.25));
 
-  const rawImages = (node.images?.edges || [])
-    .map((edge) => edge.node.url)
-    .filter(Boolean)
-    .filter((url) => !url.includes('1588776814546'));
+  const mediaEdges = node.media?.edges || [];
+
+  // Extract all high-res photography from node.images and node.media
+  const imageSet = new Set<string>();
+  for (const edge of node.images?.edges || []) {
+    if (edge.node?.url && !edge.node.url.includes('1588776814546')) {
+      imageSet.add(edge.node.url);
+    }
+  }
+  for (const edge of mediaEdges) {
+    if (edge.node.mediaContentType === 'IMAGE' && edge.node.image?.url && !edge.node.image.url.includes('1588776814546')) {
+      imageSet.add(edge.node.image.url);
+    }
+  }
+  const rawImages = Array.from(imageSet);
 
   const finalImages =
     rawImages.length > 0
@@ -171,6 +182,27 @@ export function normalizeProduct(node: ShopifyProduct): Product {
       : matchedLocal?.images || [
           'https://images.unsplash.com/photo-1603006905003-be475563bc59?auto=format&fit=crop&w=1000&q=80',
         ];
+
+  // Extract video media from Shopify
+  const extractedVideos: ProductVideo[] = [];
+  for (const edge of mediaEdges) {
+    const m = edge.node;
+    if (m.mediaContentType === 'VIDEO' && m.sources && m.sources.length > 0) {
+      extractedVideos.push({
+        id: m.id || `video-${extractedVideos.length}`,
+        previewUrl: m.previewImage?.url,
+        sources: m.sources,
+      });
+    } else if (m.mediaContentType === 'EXTERNAL_VIDEO' && m.embedUrl) {
+      extractedVideos.push({
+        id: m.id || `ext-video-${extractedVideos.length}`,
+        previewUrl: m.previewImage?.url,
+        sources: [{ url: m.embedUrl, mimeType: 'text/html' }],
+      });
+    }
+  }
+
+  const finalVideos = extractedVideos.length > 0 ? extractedVideos : (matchedLocal?.videos || []);
 
   const rawVariants = (node.variants?.edges || []).map((edge) =>
     normalizeProductVariant(edge.node)
@@ -348,6 +380,7 @@ export function normalizeProduct(node: ShopifyProduct): Product {
     defaultPrice,
     defaultMrp,
     images: finalImages,
+    videos: finalVideos,
     rating: matchedLocal?.rating || 5.0,
     reviewsCount: matchedLocal?.reviewsCount || 18,
     bestseller: tags.some((t) => t.toLowerCase() === 'bestseller') || Boolean(matchedLocal?.bestseller),

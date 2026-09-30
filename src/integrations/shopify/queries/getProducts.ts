@@ -41,6 +41,43 @@ export const PRODUCT_FRAGMENT = /* GraphQL */ `
         }
       }
     }
+    media(first: 20) {
+      edges {
+        node {
+          mediaContentType
+          ... on MediaImage {
+            id
+            image {
+              url(transform: { maxWidth: 1200, preferredContentType: WEBP })
+              altText
+              width
+              height
+            }
+          }
+          ... on Video {
+            id
+            previewImage {
+              url(transform: { maxWidth: 1200, preferredContentType: WEBP })
+            }
+            sources {
+              url
+              mimeType
+              format
+              height
+              width
+            }
+          }
+          ... on ExternalVideo {
+            id
+            embedUrl
+            host
+            previewImage {
+              url(transform: { maxWidth: 1200, preferredContentType: WEBP })
+            }
+          }
+        }
+      }
+    }
     variants(first: 20) {
       edges {
         node {

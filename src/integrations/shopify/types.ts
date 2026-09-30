@@ -57,6 +57,26 @@ export interface ShopifyVariant {
   wicksCount?: ShopifyMetafield | null;
 }
 
+export interface ShopifyVideoSource {
+  url: string;
+  mimeType: string;
+  format?: string;
+  height?: number;
+  width?: number;
+}
+
+export interface ShopifyMediaNode {
+  mediaContentType: 'IMAGE' | 'VIDEO' | 'EXTERNAL_VIDEO' | 'MODEL_3D';
+  id?: string;
+  previewImage?: {
+    url: string;
+  } | null;
+  image?: ShopifyImage | null;
+  sources?: ShopifyVideoSource[];
+  embedUrl?: string;
+  host?: string;
+}
+
 export interface ShopifyProduct {
   id: string;
   handle: string;
@@ -76,6 +96,9 @@ export interface ShopifyProduct {
   } | null;
   images: {
     edges: { node: ShopifyImage }[];
+  };
+  media?: {
+    edges: { node: ShopifyMediaNode }[];
   };
   variants: {
     edges: { node: ShopifyVariant }[];

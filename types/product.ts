@@ -43,6 +43,20 @@ export interface ProductReview {
   verifiedBuyer: boolean;
 }
 
+export interface ProductVideoSource {
+  url: string;
+  mimeType: string;
+  format?: string;
+  height?: number;
+  width?: number;
+}
+
+export interface ProductVideo {
+  id: string;
+  previewUrl?: string;
+  sources: ProductVideoSource[];
+}
+
 export interface Product {
   id: string;
   slug: string;
@@ -54,6 +68,7 @@ export interface Product {
   defaultPrice: number;
   defaultMrp: number;
   images: string[];
+  videos?: ProductVideo[];
   rating: number;
   reviewsCount: number;
   bestseller: boolean;
