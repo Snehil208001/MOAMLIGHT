@@ -91,7 +91,7 @@ export const BestsellerGrid: React.FC<BestsellerGridProps> = ({ products = PRODU
                     : 'border border-warm-border text-charcoal hover:border-amber hover:text-amber'
                 }`}
               >
-                <span>View All 6 Scents</span>
+                <span>View All {products.length > 0 ? `${products.length} ` : ''}Scents</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </Link>

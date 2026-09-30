@@ -184,48 +184,54 @@ export async function POST(req: NextRequest) {
  * Supports quick manual testing and external monitoring triggers.
  */
 export async function GET(req: NextRequest) {
-  const secret = process.env.SHOPIFY_REVALIDATION_SECRET;
-  const searchParams = req.nextUrl.searchParams;
-  const querySecret = searchParams.get('secret');
+  try {
+    const secret = process.env.SHOPIFY_REVALIDATION_SECRET;
+    const searchParams = req.nextUrl.searchParams;
+    const querySecret = searchParams.get('secret');
 
-  const isManualAuth =
-    secret && querySecret === secret;
-  const isDevBypass =
-    !secret && process.env.NODE_ENV !== 'production';
+    const isManualAuth =
+      secret && querySecret === secret;
+    const isDevBypass =
+      !secret && process.env.NODE_ENV !== 'production';
 
-  if (!isManualAuth && !isDevBypass) {
-    return NextResponse.json(
-      { error: 'Unauthorized: Missing or invalid secret parameter' },
-      { status: 401 }
-    );
+    if (!isManualAuth && !isDevBypass) {
+      return NextResponse.json(
+        { error: 'Unauthorized: Missing or invalid secret parameter' },
+        { status: 401 }
+      );
+    }
+
+    const tag = searchParams.get('tag');
+    const handle = searchParams.get('handle');
+    const revalidatedTags: string[] = [];
+
+    if (tag) {
+      safeRevalidateTag(tag);
+      revalidatedTags.push(tag);
+    }
+
+    if (handle) {
+      const productTag = `product-${handle}`;
+      safeRevalidateTag(productTag);
+      revalidatedTags.push(productTag);
+    }
+
+    if (revalidatedTags.length === 0) {
+      safeRevalidateTag('products');
+      revalidatedTags.push('products');
+    }
+
+    clearShopifyMemoryCache();
+
+    return NextResponse.json({
+      revalidated: true,
+      method: 'GET',
+      tags: revalidatedTags,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    console.error('[Revalidate GET Error]:', errorMsg);
+    return NextResponse.json({ error: errorMsg }, { status: 500 });
   }
-
-  const tag = searchParams.get('tag');
-  const handle = searchParams.get('handle');
-  const revalidatedTags: string[] = [];
-
-  if (tag) {
-    safeRevalidateTag(tag);
-    revalidatedTags.push(tag);
-  }
-
-  if (handle) {
-    const productTag = `product-${handle}`;
-    safeRevalidateTag(productTag);
-    revalidatedTags.push(productTag);
-  }
-
-  if (revalidatedTags.length === 0) {
-    safeRevalidateTag('products');
-    revalidatedTags.push('products');
-  }
-
-  clearShopifyMemoryCache();
-
-  return NextResponse.json({
-    revalidated: true,
-    method: 'GET',
-    tags: revalidatedTags,
-    timestamp: new Date().toISOString(),
-  });
 }

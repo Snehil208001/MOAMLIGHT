@@ -14,6 +14,7 @@ interface ImageGalleryProps {
   engravingText?: string;
   engravingFont?: string;
   waxColor?: string;
+  productSlug?: string;
 }
 
 export const ImageGallery: React.FC<ImageGalleryProps> = ({
@@ -24,6 +25,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
   engravingText = '',
   engravingFont = 'serif',
   waxColor = '#FFFDF8',
+  productSlug = '',
 }) => {
   const [internalViewMode, setInternalViewMode] = useState<'photo' | '3d'>('photo');
   const [activeIndex, setActiveIndex] = useState(0);
@@ -141,6 +143,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                   engravingText={engravingText}
                   engravingFont={engravingFont}
                   waxColor={waxColor}
+                  productSlug={productSlug}
                 />
               </motion.div>
             )}

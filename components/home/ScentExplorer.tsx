@@ -186,7 +186,14 @@ export const ScentExplorer: React.FC<ScentExplorerProps> = ({ products = PRODUCT
                       <strong className={isNightMode ? 'text-[#F9F6F0]' : 'text-charcoal'}>
                         Key Notes:{' '}
                       </strong>
-                      {product.scentPyramid.topNotes[0]} • {product.scentPyramid.heartNotes[0]} • {product.scentPyramid.baseNotes[0]}
+                      {(() => {
+                        const notes = [
+                          product.scentPyramid?.topNotes?.[0],
+                          product.scentPyramid?.heartNotes?.[0],
+                          product.scentPyramid?.baseNotes?.[0],
+                        ].filter(Boolean);
+                        return notes.length > 0 ? notes.join(' • ') : product.tagline || product.category;
+                      })()}
                     </div>
                   </div>
 

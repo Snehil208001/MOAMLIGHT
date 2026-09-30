@@ -56,8 +56,8 @@ export async function shopifyFetch<T, V = Record<string, unknown>>({
     signal: AbortSignal.timeout(5000),
   };
 
-  // Next.js ISR caching options
-  if (revalidate === false || revalidate === 0) {
+  // In development, never cache storefront queries so live Shopify catalog changes appear immediately
+  if (revalidate === false || revalidate === 0 || process.env.NODE_ENV !== 'production') {
     fetchOptions.cache = 'no-store';
   } else {
     // Next.js extended RequestInit

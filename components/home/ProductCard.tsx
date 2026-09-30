@@ -148,9 +148,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) 
         <div className="p-5 flex-1 flex flex-col justify-between">
           <div>
             {/* Scent Notes Preview Ribbon */}
-            <div className="text-[11px] font-semibold text-amber-dark dark:text-amber tracking-wider uppercase truncate mb-1">
-              {product.scentPyramid.topNotes[0]} • {product.scentPyramid.heartNotes[0]} • {product.scentPyramid.baseNotes[0]}
-            </div>
+            {(() => {
+              const notes = [
+                product.scentPyramid?.topNotes?.[0],
+                product.scentPyramid?.heartNotes?.[0],
+                product.scentPyramid?.baseNotes?.[0],
+              ].filter(Boolean);
+              return (
+                <div className="text-[11px] font-semibold text-amber-dark dark:text-amber tracking-wider uppercase truncate mb-1">
+                  {notes.length > 0 ? notes.join(' • ') : product.tagline || product.category}
+                </div>
+              );
+            })()}
 
             {/* Title */}
             <Link

@@ -50,3 +50,6 @@ yarn-error.log*
 
 # OS files
 Thumbs.db
+
+# Scratch and temporary scripts
+scratch/

@@ -26,6 +26,7 @@ interface EngravableCandleWrapperProps {
   engravingFont?: string;
   waxColor?: string;
   isNightMode?: boolean;
+  productSlug?: string;
 }
 
 export const EngravableCandleWrapper: React.FC<EngravableCandleWrapperProps> = (props) => {

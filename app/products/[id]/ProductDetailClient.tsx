@@ -190,6 +190,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               engravingText={isEngravingEnabled ? engravingText : ''}
               engravingFont={engravingFont}
               waxColor={waxColor}
+              productSlug={product.slug}
             />
           </div>
 

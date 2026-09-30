@@ -42,7 +42,9 @@ export const VariantSelector: React.FC<VariantSelectorProps> = ({
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-xs text-charcoal">{v.name}</span>
+                <span className="font-semibold text-xs text-charcoal">
+                  {v.name.toLowerCase() === 'default title' ? `${v.weightGrams}g Artisan Vessel` : v.name}
+                </span>
                 <span className="font-serif text-sm font-bold text-charcoal">
                   {formatINR(v.price)}
                 </span>

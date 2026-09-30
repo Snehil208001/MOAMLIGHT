@@ -136,7 +136,7 @@ let inMemoryProductsCache: {
 } | null = null;
 
 const inMemoryProductMap = new Map<string, { data: Product | null; timestamp: number }>();
-const SWR_TTL_MS = 60000; // 60-second fresh window: loads in 0ms, updates from Shopify in background
+const SWR_TTL_MS = process.env.NODE_ENV === 'production' ? 60000 : 2000;
 let isRevalidatingAll = false;
 const revalidatingHandles = new Set<string>();
 
@@ -148,7 +148,7 @@ async function revalidateProductsInBackground(): Promise<void> {
       query: GET_PRODUCTS_QUERY,
       variables: { first: 50 },
       tags: ['products'],
-      revalidate: 3600,
+      revalidate: process.env.NODE_ENV === 'production' ? 3600 : 0,
     });
     if (data.products?.edges && data.products.edges.length > 0) {
       const normalized = data.products.edges.map((edge) => normalizeProduct(edge.node));
@@ -175,7 +175,7 @@ async function revalidateProductInBackground(handle: string): Promise<void> {
       query: GET_PRODUCT_BY_HANDLE_QUERY,
       variables: { handle },
       tags: ['products', `product-${handle}`],
-      revalidate: 3600,
+      revalidate: process.env.NODE_ENV === 'production' ? 3600 : 0,
     });
     if (data.product) {
       const normalized = normalizeProduct(data.product);
@@ -213,7 +213,7 @@ export const getProducts = cache(async function getProducts(options?: {
   }
 
   const now = Date.now();
-  if (!options?.query && inMemoryProductsCache) {
+  if (process.env.NODE_ENV === 'production' && !options?.query && inMemoryProductsCache) {
     if (now - inMemoryProductsCache.timestamp >= SWR_TTL_MS) {
       // Revalidate in background without blocking response
       revalidateProductsInBackground();
@@ -229,7 +229,7 @@ export const getProducts = cache(async function getProducts(options?: {
         query: options?.query,
       },
       tags: ['products'],
-      revalidate: 3600,
+      revalidate: process.env.NODE_ENV === 'production' ? 3600 : 0,
     });
 
     if (!data.products?.edges || data.products.edges.length === 0) {
@@ -264,7 +264,7 @@ function fallbackFindProduct(key: string): Product | null {
 
 /**
  * Fetches a single product by handle/slug from Shopify Storefront API.
- * Uses in-memory micro-cache + true Stale-While-Revalidate to deduplicate requests.
+ * Uses in-memory micro-cache in production, or live fetch in dev.
  */
 export const getProduct = cache(async function getProduct(handle: string): Promise<Product | null> {
   if (!isShopifyConfigured()) {
@@ -273,36 +273,38 @@ export const getProduct = cache(async function getProduct(handle: string): Promi
 
   const now = Date.now();
 
-  // 1. Direct hit in individual product map (0 ms)
-  const cached = inMemoryProductMap.get(handle);
-  if (cached && cached.data) {
-    if (now - cached.timestamp >= SWR_TTL_MS) {
-      // Revalidate in background without blocking response
-      revalidateProductInBackground(handle);
+  if (process.env.NODE_ENV === 'production') {
+    // 1. Direct hit in individual product map (0 ms)
+    const cached = inMemoryProductMap.get(handle);
+    if (cached && cached.data) {
+      if (now - cached.timestamp >= SWR_TTL_MS) {
+        // Revalidate in background without blocking response
+        revalidateProductInBackground(handle);
+      }
+      return cached.data;
     }
-    return cached.data;
+
+    // 2. Fast-path hit from catalog cache (e.g. loaded via homepage or products catalog)
+    if (inMemoryProductsCache?.data) {
+      const found = inMemoryProductsCache.data.find(
+        (p) => p.slug === handle || p.id === handle || p.id.replace('prod-', '') === handle
+      );
+      if (found) {
+        inMemoryProductMap.set(handle, { data: found, timestamp: now });
+        inMemoryProductMap.set(found.slug, { data: found, timestamp: now });
+        inMemoryProductMap.set(found.id, { data: found, timestamp: now });
+        return found;
+      }
+    }
   }
 
-  // 2. Fast-path hit from catalog cache (e.g. loaded via homepage or products catalog)
-  if (inMemoryProductsCache?.data) {
-    const found = inMemoryProductsCache.data.find(
-      (p) => p.slug === handle || p.id === handle || p.id.replace('prod-', '') === handle
-    );
-    if (found) {
-      inMemoryProductMap.set(handle, { data: found, timestamp: now });
-      inMemoryProductMap.set(found.slug, { data: found, timestamp: now });
-      inMemoryProductMap.set(found.id, { data: found, timestamp: now });
-      return found;
-    }
-  }
-
-  // 3. Remote Shopify Storefront GraphQL fetch (fallback for direct PDP cold hits)
+  // 3. Remote Shopify Storefront GraphQL fetch
   try {
     const data = await shopifyFetch<GetProductByHandleQueryResult>({
       query: GET_PRODUCT_BY_HANDLE_QUERY,
       variables: { handle },
       tags: ['products', `product-${handle}`],
-      revalidate: 3600,
+      revalidate: process.env.NODE_ENV === 'production' ? 3600 : 0,
     });
 
     if (!data.product) {
