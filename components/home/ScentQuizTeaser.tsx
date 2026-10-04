@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
-import { Sparkles, ArrowRight, Compass } from 'lucide-react';
+import { ArrowRight, Compass } from 'lucide-react';
 
 export const ScentQuizTeaser: React.FC = () => {
   return (
