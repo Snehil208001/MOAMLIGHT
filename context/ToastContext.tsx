@@ -29,7 +29,18 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   const showToast = useCallback(
     ({ title, message, image, actionLabel, onAction }: Omit<ToastMessage, 'id'>) => {
-      const id = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+      // Sentinel: Replace weak random number generator with cryptographically secure API.
+      let randomSuffix = '';
+      if (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID) {
+        randomSuffix = window.crypto.randomUUID().substring(0, 5);
+      } else if (typeof window !== 'undefined' && window.crypto && window.crypto.getRandomValues) {
+        const array = new Uint32Array(1);
+        window.crypto.getRandomValues(array);
+        randomSuffix = (array[0] / (0xffffffff + 1)).toString(36).substring(2, 7);
+      } else {
+         randomSuffix = Math.random().toString(36).substring(2, 7);
+      }
+      const id = `${Date.now()}-${randomSuffix}`;
       const newToast: ToastMessage = { id, title, message, image, actionLabel, onAction };
 
       setToasts((prev) => [...prev, newToast]);
