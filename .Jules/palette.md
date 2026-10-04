@@ -1,0 +1,3 @@
+## 2024-03-24 - Added Focus Visible to Interactive Components
+**Learning:** In a highly stylized Next.js app that uses Framer Motion (like `Button.tsx`), it's easy to overlook keyboard accessibility. Utilizing Tailwind's `focus-visible:` utilities (`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60 focus-visible:ring-offset-2`) is an excellent pattern because it maintains an accessible focus ring *only* for keyboard navigators, keeping the design pristine for mouse users.
+**Action:** When creating or auditing new interactive components, always include `focus-visible` states rather than relying on default browser focus rings or removing focus outlines entirely.

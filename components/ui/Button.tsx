@@ -101,7 +101,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const baseStyles =
-      'group relative inline-flex items-center justify-center font-semibold rounded-xl tracking-wider select-none disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98] overflow-hidden transition-colors duration-250 cursor-pointer';
+      'group relative inline-flex items-center justify-center font-semibold rounded-xl tracking-wider select-none disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98] overflow-hidden transition-colors duration-250 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60 focus-visible:ring-offset-2 focus-visible:ring-offset-warm-linen';
 
     const variants = {
       terracotta:
