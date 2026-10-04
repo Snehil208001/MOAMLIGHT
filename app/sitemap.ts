@@ -51,19 +51,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const products = await getProducts();
     const seenSlugs = new Set<string>();
-    const productRoutes: MetadataRoute.Sitemap = [];
 
     for (const product of products) {
-      if (product.slug && !seenSlugs.has(product.slug)) {
+      if (product.slug) {
         seenSlugs.add(product.slug);
-        productRoutes.push({
-          url: `${baseUrl}/products/${product.slug}`,
-          lastModified: currentDate,
-          changeFrequency: 'weekly',
-          priority: 0.85,
-        });
       }
     }
+
+    const productRoutes: MetadataRoute.Sitemap = new Array(seenSlugs.size);
+    let idx = 0;
+
+    seenSlugs.forEach((slug) => {
+      productRoutes[idx++] = {
+        url: `${baseUrl}/products/${slug}`,
+        lastModified: currentDate,
+        changeFrequency: 'weekly',
+        priority: 0.85,
+      };
+    });
 
     return [...staticRoutes, ...productRoutes];
   } catch (error) {
