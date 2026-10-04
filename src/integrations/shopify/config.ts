@@ -43,22 +43,3 @@ export const isShopifyConfigured = (): boolean => {
   );
 };
 
-let statusLogged = false;
-
-/**
- * Logs the current operational mode once in non-production environments.
- */
-export const logShopifyMode = (): void => {
-  if (!statusLogged && process.env.NODE_ENV !== 'production') {
-    statusLogged = true;
-    if (isShopifyConfigured()) {
-      console.log(
-        `[Shopify] Live Storefront API enabled: https://${shopifyConfig.storeDomain}/api/${shopifyConfig.apiVersion}/graphql.json`
-      );
-    } else {
-      console.log(
-        '[Shopify] Credentials not detected or mock forced. Operating in Graceful Mock Fallback mode.'
-      );
-    }
-  }
-};
