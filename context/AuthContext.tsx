@@ -5,15 +5,10 @@ import {
   Customer,
   CustomerCreateInput,
   CustomerAccessTokenCreateInput,
-  loginCustomer,
   registerCustomer,
-  logoutCustomer,
-  getCustomer,
   recoverCustomerPassword,
-  updateCartBuyerIdentity,
 } from '@/src/integrations/shopify';
 
-const AUTH_TOKEN_KEY = 'moamlight_customer_token_v1';
 const CART_STORAGE_KEY = 'moamlight_cart_v1';
 
 export interface AuthContextType {
@@ -32,20 +27,23 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [customer, setCustomer] = useState<Customer | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Helper to sync cart with customer identity
-  const syncCartIdentity = useCallback(async (authToken: string, customerEmail?: string) => {
+  const syncCartIdentity = useCallback(async (customerEmail?: string) => {
     if (typeof window === 'undefined') return;
     try {
       const stored = localStorage.getItem(CART_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed.shopifyCartId) {
-          await updateCartBuyerIdentity(parsed.shopifyCartId, {
-            customerAccessToken: authToken,
-            email: customerEmail,
+          await fetch('/api/auth/sync-cart', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              cartId: parsed.shopifyCartId,
+              email: customerEmail,
+            }),
           });
         }
       }
@@ -59,17 +57,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     async function rehydrateSession() {
       if (typeof window === 'undefined') return;
       try {
-        const storedToken = localStorage.getItem(AUTH_TOKEN_KEY);
-        if (storedToken) {
-          setToken(storedToken);
-          const profile = await getCustomer(storedToken);
+        const res = await fetch('/api/auth/session');
+        if (res.ok) {
+          const { customer: profile } = await res.json();
           if (profile) {
             setCustomer(profile);
-            syncCartIdentity(storedToken, profile.email);
+            syncCartIdentity(profile.email);
           } else {
-            // Token expired or invalid
-            localStorage.removeItem(AUTH_TOKEN_KEY);
-            setToken(null);
             setCustomer(null);
           }
         }
@@ -88,26 +82,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     async (credentials: CustomerAccessTokenCreateInput): Promise<{ success: boolean; error?: string }> => {
       setIsLoading(true);
       try {
-        const res = await loginCustomer(credentials);
-        if (res.userErrors && res.userErrors.length > 0) {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(credentials),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
           setIsLoading(false);
-          return { success: false, error: res.userErrors[0].message };
+          return { success: false, error: data.error || 'Invalid email or password. Please try again.' };
         }
 
-        if (!res.token?.accessToken) {
-          setIsLoading(false);
-          return { success: false, error: 'Invalid email or password. Please try again.' };
-        }
-
-        const activeToken = res.token.accessToken;
-        setToken(activeToken);
-        localStorage.setItem(AUTH_TOKEN_KEY, activeToken);
-
-        // Fetch full profile immediately
-        const profile = await getCustomer(activeToken);
-        if (profile) {
-          setCustomer(profile);
-          syncCartIdentity(activeToken, profile.email);
+        if (data.profile) {
+          setCustomer(data.profile);
+          syncCartIdentity(data.profile.email);
         }
 
         setIsLoading(false);
@@ -147,18 +137,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = useCallback(async (): Promise<void> => {
     setIsLoading(true);
     try {
-      if (token) {
-        await logoutCustomer(token);
-      }
+      await fetch('/api/auth/logout', { method: 'POST' });
     } catch (err) {
       console.warn('[AuthContext] Remote logout error:', err);
     } finally {
-      localStorage.removeItem(AUTH_TOKEN_KEY);
-      setToken(null);
       setCustomer(null);
       setIsLoading(false);
     }
-  }, [token]);
+  }, []);
 
   // Recover Password handler
   const recoverPassword = useCallback(
@@ -179,23 +165,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Refresh customer profile (e.g. after editing address or placing order)
   const refreshCustomer = useCallback(async (): Promise<void> => {
-    if (!token) return;
     try {
-      const profile = await getCustomer(token);
-      if (profile) {
-        setCustomer(profile);
+      const res = await fetch('/api/auth/session');
+      if (res.ok) {
+        const { customer: profile } = await res.json();
+        if (profile) {
+          setCustomer(profile);
+        } else {
+          setCustomer(null);
+        }
       }
     } catch (err) {
       console.warn('[AuthContext] Refresh customer error:', err);
     }
-  }, [token]);
+  }, []);
 
   return (
     <AuthContext.Provider
       value={{
         customer,
-        token,
-        isAuthenticated: Boolean(customer && token),
+        token: customer ? 'http-only' : null, // Mock token for compatibility if any component checks for it
+        isAuthenticated: Boolean(customer),
         isLoading,
         login,
         register,
