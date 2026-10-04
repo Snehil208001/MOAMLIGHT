@@ -374,12 +374,15 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Calculations
-  const totalItemsCount = useMemo(() => {
-    return items.reduce((acc, item) => acc + item.quantity, 0);
-  }, [items]);
-
-  const subtotal = useMemo(() => {
-    return items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const { totalItemsCount, subtotal } = useMemo(() => {
+    let totalItemsCount = 0;
+    let subtotal = 0;
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      totalItemsCount += item.quantity;
+      subtotal += item.price * item.quantity;
+    }
+    return { totalItemsCount, subtotal };
   }, [items]);
 
   const hasFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD || items.length === 0;
