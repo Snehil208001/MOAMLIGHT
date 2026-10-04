@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import Link from 'next/link';
 import { motion, type Variants } from 'framer-motion';
 import { ArrowRight, Sparkles, Leaf, ShieldCheck, Truck, Banknote, Flame } from 'lucide-react';
@@ -106,7 +105,7 @@ const trustRibbonVariants: Variants = {
   },
 };
 
-export const HeroSection: React.FC = () => {
+export const HeroSection = () => {
   const { isNightMode } = useDayNight();
 
   const headlinePhrase1 = ['Illuminate', 'Your'];
