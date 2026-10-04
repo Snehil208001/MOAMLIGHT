@@ -390,9 +390,11 @@ export async function addToCart(
         if (found) {
           found.node.quantity += newLine.quantity;
         } else {
+          // Sentinel: Weak random number generation (Math.random()) replaced with cryptographically secure API.
+          const uuid = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString();
           updatedLines.push({
             node: {
-              id: `mock_line_${Date.now()}_${Math.random()}`,
+              id: `mock_line_${Date.now()}_${uuid}`,
               quantity: newLine.quantity,
               cost: {
                 totalAmount: { amount: String(1299 * newLine.quantity), currencyCode: 'INR' },

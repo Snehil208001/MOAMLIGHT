@@ -68,7 +68,11 @@ export default function CheckoutPage() {
 
     setIsProcessing(true);
     setTimeout(() => {
-      const generatedId = `MOAM-${Math.floor(100000 + Math.random() * 900000)}`;
+      // Sentinel: Weak random number generation (Math.random()) replaced with cryptographically secure PRNG.
+      const array = new Uint32Array(1);
+      window.crypto.getRandomValues(array);
+      const secureRandom = array[0] / (0xffffffff + 1);
+      const generatedId = `MOAM-${Math.floor(100000 + secureRandom * 900000)}`;
       setOrderId(generatedId);
       setIsProcessing(false);
       setOrderComplete(true);
