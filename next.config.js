@@ -36,7 +36,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://images.unsplash.com https://cdn.shopify.com; font-src 'self' data:; connect-src 'self' https://*.myshopify.com;",
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://images.unsplash.com https://cdn.shopify.com; font-src 'self' data:; media-src 'self' https://cdn.shopify.com data: blob:; worker-src 'self' blob:; connect-src 'self' https://*.myshopify.com;",
           },
           {
             key: 'X-Content-Type-Options',
