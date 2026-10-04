@@ -28,8 +28,20 @@ const STANDARD_SHIPPING_FEE = 99;
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+interface CartState {
+  items: CartItem[];
+  totalItemsCount: number;
+  subtotal: number;
+}
+
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [items, setItems] = useState<CartItem[]>([]);
+  const [cartState, setCartState] = useState<CartState>({
+    items: [],
+    totalItemsCount: 0,
+    subtotal: 0,
+  });
+  const { items, totalItemsCount, subtotal } = cartState;
+
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isGift, setIsGift] = useState<boolean>(false);
   const [giftMessage, setGiftMessage] = useState<string>('');
@@ -88,8 +100,8 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     if (cart.lines?.edges?.length) {
-      setItems((prevItems) => {
-        return prevItems.map((item) => {
+      setCartState((prevState) => {
+        const newItems = prevState.items.map((item) => {
           const matchedEdge = cart.lines.edges.find((e) => {
             if (e.node.merchandise.id !== item.variantId) return false;
             if (item.engravingText) {
@@ -111,6 +123,11 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           }
           return item;
         });
+
+        return {
+          ...prevState,
+          items: newItems,
+        };
       });
     }
   }, []);
@@ -123,7 +140,19 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed.items)) setItems(parsed.items);
+        if (Array.isArray(parsed.items)) {
+          let loadedCount = 0;
+          let loadedSubtotal = 0;
+          for (const item of parsed.items) {
+             loadedCount += item.quantity;
+             loadedSubtotal += (item.price * item.quantity);
+          }
+          setCartState({
+            items: parsed.items,
+            totalItemsCount: loadedCount,
+            subtotal: loadedSubtotal,
+          });
+        }
         if (parsed.isGift !== undefined) setIsGift(Boolean(parsed.isGift));
         if (parsed.giftMessage) setGiftMessage(String(parsed.giftMessage));
         if (parsed.appliedCouponCode) setAppliedCouponCode(String(parsed.appliedCouponCode));
@@ -199,17 +228,24 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const compositeId = `${itemData.productId}-${itemData.variantId}${engravingSuffix}`;
 
     // 1. Optimistic UI update
-    setItems((prev) => {
-      const existingIndex = prev.findIndex((item) => item.id === compositeId);
+    setCartState((prev) => {
+      const existingIndex = prev.items.findIndex((item) => item.id === compositeId);
+      let newItems;
       if (existingIndex > -1) {
-        const updated = [...prev];
-        updated[existingIndex] = {
-          ...updated[existingIndex],
-          quantity: updated[existingIndex].quantity + quantity,
+        newItems = [...prev.items];
+        newItems[existingIndex] = {
+          ...newItems[existingIndex],
+          quantity: newItems[existingIndex].quantity + quantity,
         };
-        return updated;
+      } else {
+        newItems = [...prev.items, { ...itemData, id: compositeId, quantity }];
       }
-      return [...prev, { ...itemData, id: compositeId, quantity }];
+
+      return {
+        items: newItems,
+        totalItemsCount: prev.totalItemsCount + quantity,
+        subtotal: prev.subtotal + (itemData.price * quantity)
+      };
     });
     setIsOpen(true);
 
@@ -287,10 +323,14 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return;
     }
 
+    const quantityDiff = quantity - existing.quantity;
+
     // 1. Optimistic update
-    setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, quantity } : item))
-    );
+    setCartState((prev) => ({
+      items: prev.items.map((item) => (item.id === id ? { ...item, quantity } : item)),
+      totalItemsCount: prev.totalItemsCount + quantityDiff,
+      subtotal: prev.subtotal + (existing.price * quantityDiff),
+    }));
 
     // 2. Background Shopify sync
     const currentCartId = cartIdRef.current;
@@ -315,9 +355,27 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
    */
   const removeItem = (id: string) => {
     const existing = items.find((item) => item.id === id);
+    if (!existing) return;
 
     // 1. Optimistic update
-    setItems((prev) => prev.filter((item) => item.id !== id));
+    setCartState((prev) => {
+      const newItems = prev.items.filter((item) => item.id !== id);
+
+      // Floating point correction for empty cart
+      if (newItems.length === 0) {
+        return {
+          items: [],
+          totalItemsCount: 0,
+          subtotal: 0
+        };
+      }
+
+      return {
+        items: newItems,
+        totalItemsCount: prev.totalItemsCount - existing.quantity,
+        subtotal: prev.subtotal - (existing.price * existing.quantity),
+      };
+    });
 
     // 2. Background Shopify sync
     const currentCartId = cartIdRef.current;
@@ -338,7 +396,11 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const clearCart = () => {
-    setItems([]);
+    setCartState({
+      items: [],
+      totalItemsCount: 0,
+      subtotal: 0
+    });
     setAppliedCouponCode(null);
     setIsGift(false);
     setGiftMessage('');
@@ -374,14 +436,6 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Calculations
-  const totalItemsCount = useMemo(() => {
-    return items.reduce((acc, item) => acc + item.quantity, 0);
-  }, [items]);
-
-  const subtotal = useMemo(() => {
-    return items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  }, [items]);
-
   const hasFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD || items.length === 0;
   const amountNeededForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
   const shippingFee = items.length === 0 ? 0 : subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : STANDARD_SHIPPING_FEE;
