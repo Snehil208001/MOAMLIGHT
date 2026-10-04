@@ -136,7 +136,7 @@ const QUESTIONS: QuizQuestion[] = [
  */
 async function mockKlaviyoLeadCapture(email: string, quizProfile: string): Promise<boolean> {
   // Simulating async network roundtrip to CRM endpoint
-  await new Promise((resolve) => setTimeout(resolve, 850));
+  // Delay removed to unblock UI
   if (process.env.NODE_ENV === 'development') {
     console.info(`[Klaviyo Lead Captured] Email: ${email} | Scent Profile: ${quizProfile}`);
   }
