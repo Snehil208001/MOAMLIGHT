@@ -4,7 +4,7 @@
  * MOAMLIGHT D2C E-Commerce Platform
  */
 
-import { shopifyConfig, isShopifyConfigured, logShopifyMode } from './config';
+import { shopifyConfig, isShopifyConfigured } from './config';
 import { ShopifyGraphQLResponse, ShopifyFetchOptions } from './types';
 
 export class ShopifyApiError extends Error {
@@ -32,8 +32,6 @@ export async function shopifyFetch<T, V = Record<string, unknown>>({
   revalidate = 3600,
   cache,
 }: ShopifyFetchOptions<V>): Promise<T> {
-  logShopifyMode();
-
   if (!isShopifyConfigured()) {
     throw new ShopifyApiError(
       '[Shopify Client] Shopify credentials are not configured or mock mode is active.',
