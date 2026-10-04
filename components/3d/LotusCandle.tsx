@@ -29,13 +29,14 @@ function seededRandom(seed: number) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
- * 1.  PBR MATERIALS (shared across all meshes — allocated once)
+ * 1.  PBR MATERIALS (shared across all meshes — allocated once globally)
  * ═══════════════════════════════════════════════════════════════════════════ */
 
+let waxMaterialInstance: THREE.MeshPhysicalMaterial | null = null;
 /** Translucent sky-blue candle wax — MeshPhysicalMaterial for SSS-like look */
-function useWaxMaterial() {
-  return useMemo(() => {
-    return new THREE.MeshPhysicalMaterial({
+function getWaxMaterial() {
+  if (!waxMaterialInstance) {
+    waxMaterialInstance = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color('#8ec8e2'),
       roughness: 0.38,
       metalness: 0.0,
@@ -48,13 +49,15 @@ function useWaxMaterial() {
       clearcoatRoughness: 0.4,
       side: THREE.DoubleSide,
     });
-  }, []);
+  }
+  return waxMaterialInstance;
 }
 
+let waxBedMaterialInstance: THREE.MeshPhysicalMaterial | null = null;
 /** Flat wax bed — slightly more opaque than petal wax */
-function useWaxBedMaterial() {
-  return useMemo(() => {
-    return new THREE.MeshPhysicalMaterial({
+function getWaxBedMaterial() {
+  if (!waxBedMaterialInstance) {
+    waxBedMaterialInstance = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color('#a8d4ee'),
       roughness: 0.42,
       metalness: 0.0,
@@ -65,13 +68,15 @@ function useWaxBedMaterial() {
       clearcoat: 0.03,
       side: THREE.FrontSide,
     });
-  }, []);
+  }
+  return waxBedMaterialInstance;
 }
 
+let goldMaterialInstance: THREE.MeshPhysicalMaterial | null = null;
 /** Hammered brass / champagne-gold dish */
-function useGoldMaterial() {
-  return useMemo(() => {
-    return new THREE.MeshPhysicalMaterial({
+function getGoldMaterial() {
+  if (!goldMaterialInstance) {
+    goldMaterialInstance = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color('#bfa15f'),
       metalness: 0.85,
       roughness: 0.32,
@@ -79,18 +84,91 @@ function useGoldMaterial() {
       clearcoatRoughness: 0.55,
       side: THREE.DoubleSide,
     });
-  }, []);
+  }
+  return goldMaterialInstance;
 }
 
+let pebbleMaterialInstance: THREE.MeshStandardMaterial | null = null;
 /** Off-white semi-glossy shell / pebble */
-function usePebbleMaterial() {
-  return useMemo(() => {
-    return new THREE.MeshStandardMaterial({
+function getPebbleMaterial() {
+  if (!pebbleMaterialInstance) {
+    pebbleMaterialInstance = new THREE.MeshStandardMaterial({
       color: new THREE.Color('#f5f0e8'),
       roughness: 0.48,
       metalness: 0.02,
     });
-  }, []);
+  }
+  return pebbleMaterialInstance;
+}
+
+let gripPadMaterialInstance: THREE.MeshStandardMaterial | null = null;
+function getGripPadMaterial() {
+  if (!gripPadMaterialInstance) {
+    gripPadMaterialInstance = new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#1a1816'),
+      roughness: 0.92,
+    });
+  }
+  return gripPadMaterialInstance;
+}
+
+let wickBaseMaterialInstance: THREE.MeshStandardMaterial | null = null;
+function getWickBaseMaterial() {
+  if (!wickBaseMaterialInstance) {
+    wickBaseMaterialInstance = new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#e8e0d2'),
+      roughness: 0.92,
+    });
+  }
+  return wickBaseMaterialInstance;
+}
+
+let wickTipMaterialInstance: THREE.MeshStandardMaterial | null = null;
+function getWickTipMaterial() {
+  if (!wickTipMaterialInstance) {
+    wickTipMaterialInstance = new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#1a1410'),
+      roughness: 0.95,
+    });
+  }
+  return wickTipMaterialInstance;
+}
+
+let engravingMaterialInstance: THREE.MeshStandardMaterial | null = null;
+function getEngravingMaterial() {
+  if (!engravingMaterialInstance) {
+    engravingMaterialInstance = new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#2A1E08'),
+      roughness: 0.25,
+      metalness: 0.85,
+    });
+  }
+  return engravingMaterialInstance;
+}
+
+let engravingGltfMaterialInstance: THREE.MeshStandardMaterial | null = null;
+function getEngravingGltfMaterial() {
+  if (!engravingGltfMaterialInstance) {
+    engravingGltfMaterialInstance = new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#221B14'),
+      roughness: 0.25,
+      metalness: 0.85,
+    });
+  }
+  return engravingGltfMaterialInstance;
+}
+
+let trayUndersideMaterialInstance: THREE.MeshPhysicalMaterial | null = null;
+function getTrayUndersideMaterial() {
+  if (!trayUndersideMaterialInstance) {
+    trayUndersideMaterialInstance = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color('#bfa15f'),
+      metalness: 0.85,
+      roughness: 0.32,
+      side: THREE.DoubleSide,
+    });
+  }
+  return trayUndersideMaterialInstance;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -259,10 +337,15 @@ export const LotusCandleProcedural: React.FC<LotusCandleProps> = ({
   const wickGlowRef = useRef<THREE.PointLight>(null);
 
   // ── Materials ──
-  const waxMat = useWaxMaterial();
-  const waxBedMat = useWaxBedMaterial();
-  const goldMat = useGoldMaterial();
-  const pebbleMat = usePebbleMaterial();
+  const waxMat = getWaxMaterial();
+  const waxBedMat = getWaxBedMaterial();
+  const goldMat = getGoldMaterial();
+  const pebbleMat = getPebbleMaterial();
+  const gripPadMat = getGripPadMaterial();
+  const wickBaseMat = getWickBaseMaterial();
+  const wickTipMat = getWickTipMaterial();
+  const engravingMat = getEngravingMaterial();
+  const trayUndersideMat = getTrayUndersideMaterial();
 
   // ── Geometries (memoised once) ──
   const trayGeom = useMemo(() => buildScallopedTray(), []);
@@ -365,18 +448,13 @@ export const LotusCandleProcedural: React.FC<LotusCandleProps> = ({
       {/* Tray underside disc */}
       <mesh position={[0, -0.105, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[1.18, 64]} />
-        <meshPhysicalMaterial
-          color="#bfa15f"
-          metalness={0.85}
-          roughness={0.32}
-          side={THREE.DoubleSide}
-        />
+        <primitive object={trayUndersideMat} attach="material" />
       </mesh>
       {/* Grip pads */}
       {gripPads.map((p, i) => (
         <mesh key={`grip-${i}`} position={[p.x, -0.165, p.z]}>
           <cylinderGeometry args={[0.055, 0.055, 0.01, 16]} />
-          <meshStandardMaterial color="#1a1816" roughness={0.92} />
+          <primitive object={gripPadMat} attach="material" />
         </mesh>
       ))}
 
@@ -437,12 +515,12 @@ export const LotusCandleProcedural: React.FC<LotusCandleProps> = ({
         {/* Off-white cotton base */}
         <mesh position={[0, 0.45, 0.005]} rotation={[0.04, 0, 0.02]}>
           <cylinderGeometry args={[0.007, 0.011, 0.14, 8]} />
-          <meshStandardMaterial color="#e8e0d2" roughness={0.92} />
+          <primitive object={wickBaseMat} attach="material" />
         </mesh>
         {/* Charred black tip */}
         <mesh position={[0, 0.525, 0.006]} rotation={[0.04, 0, 0.02]}>
           <sphereGeometry args={[0.012, 8, 8]} />
-          <meshStandardMaterial color="#1a1410" roughness={0.95} />
+          <primitive object={wickTipMat} attach="material" />
         </mesh>
 
         {/* Wick-area warm glow */}
@@ -492,11 +570,7 @@ export const LotusCandleProcedural: React.FC<LotusCandleProps> = ({
             textAlign="center"
           >
             {displayText}
-            <meshStandardMaterial
-              color="#2A1E08"
-              roughness={0.25}
-              metalness={0.85}
-            />
+            <primitive object={engravingMat} attach="material" />
           </Text>
         </group>
       )}
@@ -515,6 +589,7 @@ function LotusCandleGLTFModel({
   engravingFont?: string;
 }) {
   const { scene } = useGLTF('/flower-candle.glb');
+  const engravingGltfMat = getEngravingGltfMaterial();
 
   return (
     <group position={[0, -0.05, 0]}>
@@ -530,7 +605,7 @@ function LotusCandleGLTFModel({
             textAlign="center"
           >
             {engravingText.toUpperCase()}
-            <meshStandardMaterial color="#221B14" roughness={0.25} metalness={0.85} />
+            <primitive object={engravingGltfMat} attach="material" />
           </Text>
         </group>
       )}
