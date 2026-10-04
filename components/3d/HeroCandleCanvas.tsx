@@ -2,12 +2,12 @@
 
 import React, { Suspense, useState, useEffect, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { PerspectiveCamera, Environment, ContactShadows } from '@react-three/drei';
+import { PerspectiveCamera, ContactShadows } from '@react-three/drei';
 import { useLenis } from '@/components/providers/SmoothScrollProvider';
 import * as THREE from 'three';
 import { FrostedGlassCandle } from './FrostedGlassCandle';
 import { FloatingEmbers } from './FloatingEmbers';
-import { Move, Sparkles } from 'lucide-react';
+import { Move } from 'lucide-react';
 
 interface HeroCandleCanvasProps {
   isNightMode?: boolean;
