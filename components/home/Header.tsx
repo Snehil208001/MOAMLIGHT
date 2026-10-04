@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
@@ -21,18 +21,21 @@ export const Header: React.FC = () => {
   const { isNightMode } = useDayNight();
   const accountUrl = process.env.NEXT_PUBLIC_SHOPIFY_CUSTOMER_ACCOUNT_URL || 'https://eyj01h-j3.myshopify.com/account/login';
 
-  const filteredProducts = searchQuery.trim()
-    ? PRODUCTS.filter((p) => {
-        const query = searchQuery.toLowerCase();
-        return (
-          p.title.toLowerCase().includes(query) ||
-          p.category.toLowerCase().includes(query) ||
-          p.scentPyramid.topNotes.some((n) => n.toLowerCase().includes(query)) ||
-          p.scentPyramid.heartNotes.some((n) => n.toLowerCase().includes(query)) ||
-          p.scentPyramid.baseNotes.some((n) => n.toLowerCase().includes(query))
-        );
-      })
-    : [];
+  // ⚡ Bolt: Memoize the filtered products calculation to prevent expensive array iterations on every re-render when the search query hasn't changed.
+  const filteredProducts = useMemo(() => {
+    return searchQuery.trim()
+      ? PRODUCTS.filter((p) => {
+          const query = searchQuery.toLowerCase();
+          return (
+            p.title.toLowerCase().includes(query) ||
+            p.category.toLowerCase().includes(query) ||
+            p.scentPyramid.topNotes.some((n) => n.toLowerCase().includes(query)) ||
+            p.scentPyramid.heartNotes.some((n) => n.toLowerCase().includes(query)) ||
+            p.scentPyramid.baseNotes.some((n) => n.toLowerCase().includes(query))
+          );
+        })
+      : [];
+  }, [searchQuery]);
 
   return (
     <>

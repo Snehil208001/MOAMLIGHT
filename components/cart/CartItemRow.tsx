@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { memo } from 'react';
 import Link from 'next/link';
 import { CartItem } from '@/types/cart';
 import { useCart } from '@/context/CartContext';
@@ -11,7 +11,8 @@ interface CartItemRowProps {
   item: CartItem;
 }
 
-export const CartItemRow: React.FC<CartItemRowProps> = ({ item }) => {
+// ⚡ Bolt: Wrap CartItemRow in React.memo to prevent unnecessary re-renders of individual cart items when other items or cart global state changes.
+export const CartItemRow = memo(({ item }: CartItemRowProps) => {
   const { updateQuantity, removeItem, closeCart } = useCart();
 
   return (
@@ -103,4 +104,6 @@ export const CartItemRow: React.FC<CartItemRowProps> = ({ item }) => {
       </div>
     </div>
   );
-};
+});
+
+CartItemRow.displayName = 'CartItemRow';

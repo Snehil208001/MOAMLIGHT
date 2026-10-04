@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import Link from 'next/link';
 import { Product } from '@/types/product';
 import { useCart } from '@/context/CartContext';
@@ -16,7 +16,8 @@ interface ProductCardProps {
   index?: number;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
+// ⚡ Bolt: Wrap ProductCard in React.memo to prevent unnecessary re-renders in large lists when parent components update.
+export const ProductCard = memo(({ product, index = 0 }: ProductCardProps) => {
   const { addItem, openCart } = useCart();
   const { showToast } = useToast();
   const { isNightMode } = useDayNight();
@@ -219,4 +220,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) 
       </div>
     </div>
   );
-};
+});
+
+ProductCard.displayName = 'ProductCard';
