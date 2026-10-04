@@ -69,9 +69,6 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
     setAddToCartStatus('loading');
 
-    // Tactile micro-delay for smooth UX feedback
-    await new Promise((resolve) => setTimeout(resolve, 380));
-
     addItem(
       {
         productId: product.id,
