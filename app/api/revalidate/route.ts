@@ -59,14 +59,21 @@ export async function POST(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams;
   const querySecret = searchParams.get('secret');
 
-  const rawBody = await req.text();
-
   // 1. Authorization check
   const isShopifyWebhook = Boolean(hmacHeader);
   const isManualAuth =
     secret && (querySecret === secret || customSecretHeader === secret);
   const isDevBypass =
     !secret && process.env.NODE_ENV !== 'production';
+
+  if (!isShopifyWebhook && !isManualAuth && !isDevBypass) {
+    return NextResponse.json(
+      { error: 'Unauthorized: Missing or invalid revalidation secret' },
+      { status: 401 }
+    );
+  }
+
+  const rawBody = await req.text();
 
   if (isShopifyWebhook) {
     if (!secret) {
@@ -82,11 +89,6 @@ export async function POST(req: NextRequest) {
       console.error('[Revalidate] Unauthorized: HMAC signature mismatch.');
       return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 401 });
     }
-  } else if (!isManualAuth && !isDevBypass) {
-    return NextResponse.json(
-      { error: 'Unauthorized: Missing or invalid revalidation secret' },
-      { status: 401 }
-    );
   }
 
   // 2. Process invalidation tags
