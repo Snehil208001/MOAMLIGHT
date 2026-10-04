@@ -33,65 +33,49 @@ function seededRandom(seed: number) {
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 /** Translucent sky-blue candle wax — MeshPhysicalMaterial for SSS-like look */
-function useWaxMaterial() {
-  return useMemo(() => {
-    return new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color('#8ec8e2'),
-      roughness: 0.38,
-      metalness: 0.0,
-      transmission: 0.18,
-      thickness: 1.4,
-      ior: 1.45,
-      specularIntensity: 0.5,
-      specularColor: new THREE.Color('#ffffff'),
-      clearcoat: 0.05,
-      clearcoatRoughness: 0.4,
-      side: THREE.DoubleSide,
-    });
-  }, []);
-}
+const waxMaterial = new THREE.MeshPhysicalMaterial({
+  color: new THREE.Color('#8ec8e2'),
+  roughness: 0.38,
+  metalness: 0.0,
+  transmission: 0.18,
+  thickness: 1.4,
+  ior: 1.45,
+  specularIntensity: 0.5,
+  specularColor: new THREE.Color('#ffffff'),
+  clearcoat: 0.05,
+  clearcoatRoughness: 0.4,
+  side: THREE.DoubleSide,
+});
 
 /** Flat wax bed — slightly more opaque than petal wax */
-function useWaxBedMaterial() {
-  return useMemo(() => {
-    return new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color('#a8d4ee'),
-      roughness: 0.42,
-      metalness: 0.0,
-      transmission: 0.08,
-      thickness: 0.8,
-      ior: 1.45,
-      specularIntensity: 0.4,
-      clearcoat: 0.03,
-      side: THREE.FrontSide,
-    });
-  }, []);
-}
+const waxBedMaterial = new THREE.MeshPhysicalMaterial({
+  color: new THREE.Color('#a8d4ee'),
+  roughness: 0.42,
+  metalness: 0.0,
+  transmission: 0.08,
+  thickness: 0.8,
+  ior: 1.45,
+  specularIntensity: 0.4,
+  clearcoat: 0.03,
+  side: THREE.FrontSide,
+});
 
 /** Hammered brass / champagne-gold dish */
-function useGoldMaterial() {
-  return useMemo(() => {
-    return new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color('#bfa15f'),
-      metalness: 0.85,
-      roughness: 0.32,
-      clearcoat: 0.12,
-      clearcoatRoughness: 0.55,
-      side: THREE.DoubleSide,
-    });
-  }, []);
-}
+const goldMaterial = new THREE.MeshPhysicalMaterial({
+  color: new THREE.Color('#bfa15f'),
+  metalness: 0.85,
+  roughness: 0.32,
+  clearcoat: 0.12,
+  clearcoatRoughness: 0.55,
+  side: THREE.DoubleSide,
+});
 
 /** Off-white semi-glossy shell / pebble */
-function usePebbleMaterial() {
-  return useMemo(() => {
-    return new THREE.MeshStandardMaterial({
-      color: new THREE.Color('#f5f0e8'),
-      roughness: 0.48,
-      metalness: 0.02,
-    });
-  }, []);
-}
+const pebbleMaterial = new THREE.MeshStandardMaterial({
+  color: new THREE.Color('#f5f0e8'),
+  roughness: 0.48,
+  metalness: 0.02,
+});
 
 /* ═══════════════════════════════════════════════════════════════════════════
  * 2.  GEOMETRY BUILDERS  (pure, memoised, no side-effects)
@@ -259,10 +243,10 @@ export const LotusCandleProcedural: React.FC<LotusCandleProps> = ({
   const wickGlowRef = useRef<THREE.PointLight>(null);
 
   // ── Materials ──
-  const waxMat = useWaxMaterial();
-  const waxBedMat = useWaxBedMaterial();
-  const goldMat = useGoldMaterial();
-  const pebbleMat = usePebbleMaterial();
+  const waxMat = waxMaterial;
+  const waxBedMat = waxBedMaterial;
+  const goldMat = goldMaterial;
+  const pebbleMat = pebbleMaterial;
 
   // ── Geometries (memoised once) ──
   const trayGeom = useMemo(() => buildScallopedTray(), []);
