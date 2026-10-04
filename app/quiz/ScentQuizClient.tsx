@@ -201,7 +201,10 @@ export function ScentQuizClient() {
     setIsSubmittingLead(true);
 
     try {
-      await mockKlaviyoLeadCapture(leadEmail.trim(), matchedProduct?.category || 'Atelier Scent');
+      // Fire and forget the lead capture to prevent blocking UI
+      mockKlaviyoLeadCapture(leadEmail.trim(), matchedProduct?.category || 'Atelier Scent').catch((err) => {
+        console.error('Failed to capture lead:', err);
+      });
       
       // Auto-apply the 10% coupon directly to the cart context
       applyCoupon('MOAM10');
