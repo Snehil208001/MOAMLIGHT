@@ -29,7 +29,8 @@ const STANDARD_SHIPPING_FEE = 99;
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [items, setItems] = useState<CartItem[]>([]);
+  const [itemsMap, setItemsMap] = useState<Record<string, CartItem>>({});
+  const items = useMemo(() => Object.values(itemsMap), [itemsMap]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isGift, setIsGift] = useState<boolean>(false);
   const [giftMessage, setGiftMessage] = useState<string>('');
@@ -88,8 +89,9 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     if (cart.lines?.edges?.length) {
-      setItems((prevItems) => {
-        return prevItems.map((item) => {
+      setItemsMap((prevMap) => {
+        const updatedMap = { ...prevMap };
+        Object.entries(updatedMap).forEach(([id, item]) => {
           const matchedEdge = cart.lines.edges.find((e) => {
             if (e.node.merchandise.id !== item.variantId) return false;
             if (item.engravingText) {
@@ -104,13 +106,13 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             return !isEngravedEdge;
           });
           if (matchedEdge) {
-            return {
+            updatedMap[id] = {
               ...item,
               shopifyLineId: matchedEdge.node.id,
             };
           }
-          return item;
         });
+        return updatedMap;
       });
     }
   }, []);
@@ -123,7 +125,13 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed.items)) setItems(parsed.items);
+        if (Array.isArray(parsed.items)) {
+          const loadedMap: Record<string, CartItem> = {};
+          parsed.items.forEach((item: CartItem) => {
+            loadedMap[item.id] = item;
+          });
+          setItemsMap(loadedMap);
+        }
         if (parsed.isGift !== undefined) setIsGift(Boolean(parsed.isGift));
         if (parsed.giftMessage) setGiftMessage(String(parsed.giftMessage));
         if (parsed.appliedCouponCode) setAppliedCouponCode(String(parsed.appliedCouponCode));
@@ -199,17 +207,21 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const compositeId = `${itemData.productId}-${itemData.variantId}${engravingSuffix}`;
 
     // 1. Optimistic UI update
-    setItems((prev) => {
-      const existingIndex = prev.findIndex((item) => item.id === compositeId);
-      if (existingIndex > -1) {
-        const updated = [...prev];
-        updated[existingIndex] = {
-          ...updated[existingIndex],
-          quantity: updated[existingIndex].quantity + quantity,
+    setItemsMap((prev) => {
+      const existingItem = prev[compositeId];
+      if (existingItem) {
+        return {
+          ...prev,
+          [compositeId]: {
+            ...existingItem,
+            quantity: existingItem.quantity + quantity,
+          },
         };
-        return updated;
       }
-      return [...prev, { ...itemData, id: compositeId, quantity }];
+      return {
+        ...prev,
+        [compositeId]: { ...itemData, id: compositeId, quantity },
+      };
     });
     setIsOpen(true);
 
@@ -279,7 +291,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
    * Updates item quantity with optimistic UI update and background sync.
    */
   const updateQuantity = (id: string, quantity: number) => {
-    const existing = items.find((item) => item.id === id);
+    const existing = itemsMap[id];
     if (!existing) return;
 
     if (quantity <= 0) {
@@ -288,9 +300,10 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     // 1. Optimistic update
-    setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, quantity } : item))
-    );
+    setItemsMap((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], quantity },
+    }));
 
     // 2. Background Shopify sync
     const currentCartId = cartIdRef.current;
@@ -314,10 +327,14 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
    * Removes an item from the cart with optimistic UI update and background sync.
    */
   const removeItem = (id: string) => {
-    const existing = items.find((item) => item.id === id);
+    const existing = itemsMap[id];
 
     // 1. Optimistic update
-    setItems((prev) => prev.filter((item) => item.id !== id));
+    setItemsMap((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
 
     // 2. Background Shopify sync
     const currentCartId = cartIdRef.current;
@@ -338,7 +355,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const clearCart = () => {
-    setItems([]);
+    setItemsMap({});
     setAppliedCouponCode(null);
     setIsGift(false);
     setGiftMessage('');
