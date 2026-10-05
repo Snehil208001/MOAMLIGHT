@@ -34,8 +34,9 @@ export const PromoCodeInput: React.FC = () => {
         </div>
         <button
           onClick={removeCoupon}
-          className="text-charcoal-muted hover:text-charcoal p-1 transition-colors"
+          className="text-charcoal-muted hover:text-charcoal p-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60 rounded"
           title="Remove coupon"
+          aria-label="Remove coupon"
         >
           <X className="w-3.5 h-3.5" />
         </button>
