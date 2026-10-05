@@ -14,6 +14,138 @@ interface EngravableCandleProps {
   isNightMode?: boolean;
 }
 
+// Color targets
+const dayGlassColor = new THREE.Color('#FFFFFF');
+const nightGlassColor = new THREE.Color('#FFEFE2');
+
+// 🧊 AGENT 2: Physical Frosted Glass Material with Crown Glass Optics & Chromatic Dispersion
+let physicalFrostedGlassMaterialInstance: THREE.MeshPhysicalMaterial | null = null;
+function getPhysicalFrostedGlassMaterial() {
+  if (!physicalFrostedGlassMaterialInstance) {
+    physicalFrostedGlassMaterialInstance = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color('#FFFFFF'),
+      transparent: true,
+      opacity: 0.88,
+      roughness: 0.06,
+      metalness: 0.02,
+      transmission: 0.58,
+      ior: 1.48,
+      thickness: 0.8,
+      specularIntensity: 2.0,
+      specularColor: new THREE.Color('#FFFFFF'),
+      clearcoat: 1.0,
+      clearcoatRoughness: 0.03,
+      attenuationColor: new THREE.Color('#FFF5E8'),
+      attenuationDistance: 1.4,
+      envMapIntensity: 1.8,
+    });
+  }
+  return physicalFrostedGlassMaterialInstance;
+}
+
+// Scent-Specific Botanical Soy Wax Core
+const botanicalWaxMaterialsCache: Record<string, THREE.MeshStandardMaterial> = {};
+function getBotanicalWaxMaterial(waxColor: string) {
+  if (!botanicalWaxMaterialsCache[waxColor]) {
+    botanicalWaxMaterialsCache[waxColor] = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(waxColor),
+      roughness: 0.88,
+      metalness: 0.02,
+    });
+  }
+  return botanicalWaxMaterialsCache[waxColor];
+}
+
+// Molten Wax Pool
+const moltenWaxMaterialsCache: Record<string, THREE.MeshStandardMaterial> = {};
+function getMoltenWaxMaterial(waxColor: string) {
+  if (!moltenWaxMaterialsCache[waxColor]) {
+    moltenWaxMaterialsCache[waxColor] = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(waxColor).lerp(new THREE.Color('#FFF4E0'), 0.3),
+      roughness: 0.16,
+      metalness: 0.08,
+    });
+  }
+  return moltenWaxMaterialsCache[waxColor];
+}
+
+// Royal Brushed Gold Brass for Rims and Engraved Plaque
+let royalGoldBrassMaterialInstance: THREE.MeshStandardMaterial | null = null;
+function getRoyalGoldBrassMaterial() {
+  if (!royalGoldBrassMaterialInstance) {
+    royalGoldBrassMaterialInstance = new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#D4AF37'),
+      metalness: 0.94,
+      roughness: 0.22,
+    });
+  }
+  return royalGoldBrassMaterialInstance;
+}
+
+// Braided Cotton Wick
+let wickMaterialInstance: THREE.MeshStandardMaterial | null = null;
+function getWickMaterial() {
+  if (!wickMaterialInstance) {
+    wickMaterialInstance = new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#1C1613'),
+      roughness: 0.92,
+    });
+  }
+  return wickMaterialInstance;
+}
+
+// Flame Materials
+let flameOuterMaterialInstance: THREE.MeshBasicMaterial | null = null;
+function getFlameOuterMaterial() {
+  if (!flameOuterMaterialInstance) {
+    flameOuterMaterialInstance = new THREE.MeshBasicMaterial({
+      color: new THREE.Color('#FF7A00'),
+      transparent: true,
+      opacity: 0.92,
+    });
+  }
+  return flameOuterMaterialInstance;
+}
+
+let flameInnerCoreMaterialInstance: THREE.MeshBasicMaterial | null = null;
+function getFlameInnerCoreMaterial() {
+  if (!flameInnerCoreMaterialInstance) {
+    flameInnerCoreMaterialInstance = new THREE.MeshBasicMaterial({
+      color: new THREE.Color('#FFFFF0'),
+    });
+  }
+  return flameInnerCoreMaterialInstance;
+}
+
+let flameVolumetricHaloMaterialInstance: THREE.MeshBasicMaterial | null = null;
+function getFlameVolumetricHaloMaterial() {
+  if (!flameVolumetricHaloMaterialInstance) {
+    flameVolumetricHaloMaterialInstance = new THREE.MeshBasicMaterial({
+      color: new THREE.Color('#FF8C00'),
+      transparent: true,
+      opacity: 0.38,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+  }
+  return flameVolumetricHaloMaterialInstance;
+}
+
+// Caustic Glow Ring below base
+let causticRingMaterialInstance: THREE.MeshBasicMaterial | null = null;
+function getCausticRingMaterial() {
+  if (!causticRingMaterialInstance) {
+    causticRingMaterialInstance = new THREE.MeshBasicMaterial({
+      color: new THREE.Color('#FF9922'),
+      transparent: true,
+      opacity: 0.32,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+  }
+  return causticRingMaterialInstance;
+}
+
 export const EngravableCandle: React.FC<EngravableCandleProps> = ({
   engravingText = '',
   engravingFont = 'serif',
@@ -36,100 +168,16 @@ export const EngravableCandle: React.FC<EngravableCandleProps> = ({
   }, [engravingText]);
 
   // Color targets
-  const dayGlassColor = useMemo(() => new THREE.Color('#FFFFFF'), []);
-  const nightGlassColor = useMemo(() => new THREE.Color('#FFEFE2'), []);
 
-  // 🧊 AGENT 2: Physical Frosted Glass Material with Crown Glass Optics & Chromatic Dispersion
-  const physicalFrostedGlassMaterial = useMemo(() => {
-    return new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color('#FFFFFF'),
-      transparent: true,
-      opacity: 0.88,
-      roughness: 0.06,
-      metalness: 0.02,
-      transmission: 0.58,
-      ior: 1.48,
-      thickness: 0.8,
-      specularIntensity: 2.0,
-      specularColor: new THREE.Color('#FFFFFF'),
-      clearcoat: 1.0,
-      clearcoatRoughness: 0.03,
-      attenuationColor: new THREE.Color('#FFF5E8'),
-      attenuationDistance: 1.4,
-      envMapIntensity: 1.8,
-    });
-  }, []);
-
-  // Scent-Specific Botanical Soy Wax Core
-  const botanicalWaxMaterial = useMemo(() => {
-    return new THREE.MeshStandardMaterial({
-      color: new THREE.Color(waxColor),
-      roughness: 0.88,
-      metalness: 0.02,
-    });
-  }, [waxColor]);
-
-  // Molten Wax Pool
-  const moltenWaxMaterial = useMemo(() => {
-    return new THREE.MeshStandardMaterial({
-      color: new THREE.Color(waxColor).lerp(new THREE.Color('#FFF4E0'), 0.3),
-      roughness: 0.16,
-      metalness: 0.08,
-    });
-  }, [waxColor]);
-
-  // Royal Brushed Gold Brass for Rims and Engraved Plaque
-  const royalGoldBrassMaterial = useMemo(() => {
-    return new THREE.MeshStandardMaterial({
-      color: new THREE.Color('#D4AF37'),
-      metalness: 0.94,
-      roughness: 0.22,
-    });
-  }, []);
-
-  // Braided Cotton Wick
-  const wickMaterial = useMemo(() => {
-    return new THREE.MeshStandardMaterial({
-      color: new THREE.Color('#1C1613'),
-      roughness: 0.92,
-    });
-  }, []);
-
-  // Flame Materials
-  const flameOuterMaterial = useMemo(() => {
-    return new THREE.MeshBasicMaterial({
-      color: new THREE.Color('#FF7A00'),
-      transparent: true,
-      opacity: 0.92,
-    });
-  }, []);
-
-  const flameInnerCoreMaterial = useMemo(() => {
-    return new THREE.MeshBasicMaterial({
-      color: new THREE.Color('#FFFFF0'),
-    });
-  }, []);
-
-  const flameVolumetricHaloMaterial = useMemo(() => {
-    return new THREE.MeshBasicMaterial({
-      color: new THREE.Color('#FF8C00'),
-      transparent: true,
-      opacity: 0.38,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    });
-  }, []);
-
-  // Caustic Glow Ring below base
-  const causticRingMaterial = useMemo(() => {
-    return new THREE.MeshBasicMaterial({
-      color: new THREE.Color('#FF9922'),
-      transparent: true,
-      opacity: 0.32,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    });
-  }, []);
+  const physicalFrostedGlassMaterial = getPhysicalFrostedGlassMaterial();
+  const botanicalWaxMaterial = getBotanicalWaxMaterial(waxColor);
+  const moltenWaxMaterial = getMoltenWaxMaterial(waxColor);
+  const royalGoldBrassMaterial = getRoyalGoldBrassMaterial();
+  const wickMaterial = getWickMaterial();
+  const flameOuterMaterial = getFlameOuterMaterial();
+  const flameInnerCoreMaterial = getFlameInnerCoreMaterial();
+  const flameVolumetricHaloMaterial = getFlameVolumetricHaloMaterial();
+  const causticRingMaterial = getCausticRingMaterial();
 
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
