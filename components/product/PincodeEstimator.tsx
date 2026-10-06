@@ -30,13 +30,14 @@ export const PincodeEstimator: React.FC = () => {
 
   return (
     <div className="bg-warm-cream/40 border border-warm-border rounded-xl p-4 space-y-3">
-      <div className="flex items-center gap-2 text-xs font-semibold text-charcoal">
+      <label htmlFor="pincode-input" className="flex items-center gap-2 text-xs font-semibold text-charcoal cursor-pointer">
         <MapPin className="w-4 h-4 text-terracotta" />
         <span>Check Estimated Delivery Date & COD:</span>
-      </div>
+      </label>
 
       <div className="flex gap-2">
         <input
+          id="pincode-input"
           type="text"
           maxLength={6}
           value={pincode}
@@ -50,7 +51,7 @@ export const PincodeEstimator: React.FC = () => {
             }
           }}
           placeholder="Enter 6-digit pincode (e.g. 560001)"
-          className="flex-1 px-3 py-2 text-xs bg-warm-linen border border-warm-border rounded-lg text-charcoal placeholder:text-charcoal-muted/60 focus:outline-none focus:border-terracotta transition-colors"
+          className="flex-1 px-3 py-2 text-xs bg-warm-linen border border-warm-border rounded-lg text-charcoal placeholder:text-charcoal-muted/60 focus:outline-none focus:border-terracotta focus-visible:ring-2 focus-visible:ring-terracotta/60 transition-colors"
         />
         <button
           type="button"

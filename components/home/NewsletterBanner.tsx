@@ -61,14 +61,16 @@ export const NewsletterBanner: React.FC = () => {
         ) : (
           <form onSubmit={handleSubmit} className="mt-8 max-w-md mx-auto flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
+              <label htmlFor="newsletter-input" className="sr-only">Email or WhatsApp</label>
               <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-charcoal-muted" />
               <input
+                id="newsletter-input"
                 type="text"
                 required
                 value={contact}
                 onChange={(e) => setContact(e.target.value)}
                 placeholder="Enter Email or WhatsApp (+91)..."
-                className="w-full pl-10 pr-4 py-3 bg-warm-cream/50 border border-warm-border rounded-xl text-xs sm:text-sm text-charcoal placeholder:text-charcoal-muted/60 focus:outline-none focus:border-terracotta transition-colors"
+                className="w-full pl-10 pr-4 py-3 bg-warm-cream/50 border border-warm-border rounded-xl text-xs sm:text-sm text-charcoal placeholder:text-charcoal-muted/60 focus:outline-none focus:border-terracotta focus-visible:ring-2 focus-visible:ring-terracotta/60 transition-colors"
               />
             </div>
             <button

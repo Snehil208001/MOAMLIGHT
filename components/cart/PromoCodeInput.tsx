@@ -48,8 +48,10 @@ export const PromoCodeInput: React.FC = () => {
     <div className="space-y-1.5">
       <form onSubmit={handleApply} className="flex gap-2">
         <div className="relative flex-1">
+          <label htmlFor="promo-code-input" className="sr-only">Promo Code</label>
           <Tag className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-muted" />
           <input
+            id="promo-code-input"
             type="text"
             value={code}
             onChange={(e) => {
@@ -57,7 +59,7 @@ export const PromoCodeInput: React.FC = () => {
               setErrorMsg('');
             }}
             placeholder="PROMO CODE (e.g. MOAM10)"
-            className="w-full pl-9 pr-3 py-2 text-xs uppercase font-medium bg-warm-linen border border-warm-border rounded-lg text-charcoal placeholder:text-charcoal-muted/60 focus:outline-none focus:border-terracotta transition-colors"
+            className="w-full pl-9 pr-3 py-2 text-xs uppercase font-medium bg-warm-linen border border-warm-border rounded-lg text-charcoal placeholder:text-charcoal-muted/60 focus:outline-none focus:border-terracotta focus-visible:ring-2 focus-visible:ring-terracotta/60 transition-colors"
           />
         </div>
         <button

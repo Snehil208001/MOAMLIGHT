@@ -29,13 +29,15 @@ export const GiftOptionToggle: React.FC = () => {
 
       {isGift && (
         <div className="pt-2">
+          <label htmlFor="gift-message-textarea" className="sr-only">Gift Message</label>
           <textarea
+            id="gift-message-textarea"
             value={giftMessage}
             onChange={(e) => setGiftOptions(true, e.target.value)}
             maxLength={150}
             rows={2}
             placeholder="Write your personalized gift message here (e.g., Happy Diwali! Love, Priya)..."
-            className="w-full p-2.5 text-xs bg-warm-linen border border-warm-border rounded-lg text-charcoal placeholder:text-charcoal-muted/60 focus:outline-none focus:border-terracotta resize-none transition-colors"
+            className="w-full p-2.5 text-xs bg-warm-linen border border-warm-border rounded-lg text-charcoal placeholder:text-charcoal-muted/60 focus:outline-none focus:border-terracotta focus-visible:ring-2 focus-visible:ring-terracotta/60 resize-none transition-colors"
           />
           <div className="text-right text-[10px] text-charcoal-muted">
             {giftMessage.length} / 150 characters
