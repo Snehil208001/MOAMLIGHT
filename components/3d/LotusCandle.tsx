@@ -175,6 +175,64 @@ function getTrayUndersideMaterial() {
  * 2.  GEOMETRY BUILDERS  (pure, memoised, no side-effects)
  * ═══════════════════════════════════════════════════════════════════════════ */
 
+let trayGeomInstance: THREE.BufferGeometry | null = null;
+function getTrayGeom() {
+  if (!trayGeomInstance) {
+    trayGeomInstance = buildScallopedTray();
+  }
+  return trayGeomInstance;
+}
+
+let petalGeomsInstance: THREE.BufferGeometry[] | null = null;
+function getPetalGeoms() {
+  if (!petalGeomsInstance) {
+    petalGeomsInstance = [
+      buildPetalGeometry(1.0),   // tier 0 – outer skirt
+      buildPetalGeometry(0.92),  // tier 1
+      buildPetalGeometry(0.82),  // tier 2
+      buildPetalGeometry(0.68),  // tier 3
+      buildPetalGeometry(0.50),  // tier 4 – inner bud
+    ];
+  }
+  return petalGeomsInstance;
+}
+
+const STATIC_TIERS = [
+  // { count, radius from centre, base Y, tilt (rad from vertical), scale, geomIdx }
+  { count: 14, r: 0.48, y: 0.005, tilt: 1.28, s: 1.05, gi: 0 },
+  { count: 12, r: 0.40, y: 0.035, tilt: 1.05, s: 0.96, gi: 0 },
+  { count: 11, r: 0.33, y: 0.075, tilt: 0.82, s: 0.88, gi: 1 },
+  { count: 10, r: 0.27, y: 0.12, tilt: 0.62, s: 0.78, gi: 1 },
+  { count: 9,  r: 0.22, y: 0.17, tilt: 0.48, s: 0.70, gi: 2 },
+  { count: 8,  r: 0.17, y: 0.22, tilt: 0.36, s: 0.60, gi: 2 },
+  { count: 7,  r: 0.13, y: 0.27, tilt: 0.26, s: 0.50, gi: 3 },
+  { count: 6,  r: 0.09, y: 0.31, tilt: 0.18, s: 0.42, gi: 3 },
+  { count: 5,  r: 0.05, y: 0.34, tilt: 0.10, s: 0.34, gi: 4 },
+  { count: 4,  r: 0.02, y: 0.36, tilt: 0.05, s: 0.26, gi: 4 },
+];
+
+const STATIC_PEBBLES = (() => {
+  const out: { x: number; z: number; sx: number; sy: number; sz: number; ry: number }[] = [];
+  for (let i = 0; i < 10; i++) {
+    const angle = (i / 10) * Math.PI * 2 + seededRandom(i * 3) * 0.5;
+    const dist = 0.62 + seededRandom(i * 7) * 0.34;
+    out.push({
+      x: Math.cos(angle) * dist,
+      z: Math.sin(angle) * dist,
+      sx: 0.04 + seededRandom(i * 11) * 0.03,
+      sy: 0.015 + seededRandom(i * 13) * 0.01,
+      sz: 0.04 + seededRandom(i * 17) * 0.025,
+      ry: seededRandom(i * 19) * Math.PI * 2,
+    });
+  }
+  return out;
+})();
+
+const STATIC_GRIP_PADS = [0, (2 * Math.PI) / 3, (4 * Math.PI) / 3].map((a) => ({
+  x: Math.cos(a) * 0.72,
+  z: Math.sin(a) * 0.72,
+}));
+
 /**
  * Build a single organic petal with curvature, thickness, and ruffled tip.
  * `heightScale` lets inner tiers have shorter petals.
@@ -348,57 +406,19 @@ export const LotusCandleProcedural: React.FC<LotusCandleProps> = ({
   const trayUndersideMat = getTrayUndersideMaterial();
 
   // ── Geometries (memoised once) ──
-  const trayGeom = useMemo(() => buildScallopedTray(), []);
+  const trayGeom = getTrayGeom();
 
   // 5 petal geometries for 5 concentric tiers (decreasing height)
-  const petalGeoms = useMemo(() => [
-    buildPetalGeometry(1.0),   // tier 0 – outer skirt
-    buildPetalGeometry(0.92),  // tier 1
-    buildPetalGeometry(0.82),  // tier 2
-    buildPetalGeometry(0.68),  // tier 3
-    buildPetalGeometry(0.50),  // tier 4 – inner bud
-  ], []);
+  const petalGeoms = getPetalGeoms();
 
   // ── Petal Tier Definitions (phyllotaxis golden-angle offsets) ──
-  const tiers = useMemo(() => [
-    // { count, radius from centre, base Y, tilt (rad from vertical), scale, geomIdx }
-    { count: 14, r: 0.48, y: 0.005, tilt: 1.28, s: 1.05, gi: 0 },
-    { count: 12, r: 0.40, y: 0.035, tilt: 1.05, s: 0.96, gi: 0 },
-    { count: 11, r: 0.33, y: 0.075, tilt: 0.82, s: 0.88, gi: 1 },
-    { count: 10, r: 0.27, y: 0.12, tilt: 0.62, s: 0.78, gi: 1 },
-    { count: 9,  r: 0.22, y: 0.17, tilt: 0.48, s: 0.70, gi: 2 },
-    { count: 8,  r: 0.17, y: 0.22, tilt: 0.36, s: 0.60, gi: 2 },
-    { count: 7,  r: 0.13, y: 0.27, tilt: 0.26, s: 0.50, gi: 3 },
-    { count: 6,  r: 0.09, y: 0.31, tilt: 0.18, s: 0.42, gi: 3 },
-    { count: 5,  r: 0.05, y: 0.34, tilt: 0.10, s: 0.34, gi: 4 },
-    { count: 4,  r: 0.02, y: 0.36, tilt: 0.05, s: 0.26, gi: 4 },
-  ], []);
+  const tiers = STATIC_TIERS;
 
   // ── Pebble / stone positions (scattered on the wax bed) ──
-  const pebbles = useMemo(() => {
-    const out: { x: number; z: number; sx: number; sy: number; sz: number; ry: number }[] = [];
-    for (let i = 0; i < 10; i++) {
-      const angle = (i / 10) * Math.PI * 2 + seededRandom(i * 3) * 0.5;
-      const dist = 0.62 + seededRandom(i * 7) * 0.34;
-      out.push({
-        x: Math.cos(angle) * dist,
-        z: Math.sin(angle) * dist,
-        sx: 0.04 + seededRandom(i * 11) * 0.03,
-        sy: 0.015 + seededRandom(i * 13) * 0.01,
-        sz: 0.04 + seededRandom(i * 17) * 0.025,
-        ry: seededRandom(i * 19) * Math.PI * 2,
-      });
-    }
-    return out;
-  }, []);
+  const pebbles = STATIC_PEBBLES;
 
   // ── Grip pads on tray underside ──
-  const gripPads = useMemo(() =>
-    [0, (2 * Math.PI) / 3, (4 * Math.PI) / 3].map((a) => ({
-      x: Math.cos(a) * 0.72,
-      z: Math.sin(a) * 0.72,
-    }))
-  , []);
+  const gripPads = STATIC_GRIP_PADS;
 
   // ── Animation: subtle wick glow flicker ──
   useFrame((state) => {
