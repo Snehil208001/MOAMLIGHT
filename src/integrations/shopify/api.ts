@@ -641,7 +641,7 @@ export async function loginCustomer(
     console.error('[Shopify Auth API] loginCustomer failed:', error);
     return {
       token: null,
-      userErrors: [{ message: error instanceof Error ? error.message : 'Unable to connect to Shopify. Please try again.' }],
+      userErrors: [{ message: 'Unable to connect to Shopify. Please try again.' }],
     };
   }
 }
@@ -674,7 +674,7 @@ export async function registerCustomer(
     console.error('[Shopify Auth API] registerCustomer failed:', error);
     return {
       customer: null,
-      userErrors: [{ message: error instanceof Error ? error.message : 'Registration failed. Please try again.' }],
+      userErrors: [{ message: 'Registration failed. Please try again.' }],
     };
   }
 }
@@ -793,7 +793,7 @@ export async function recoverCustomerPassword(
     console.error('[Shopify Auth API] recoverCustomerPassword failed:', error);
     return {
       success: false,
-      userErrors: [{ message: error instanceof Error ? error.message : 'Unable to send recovery email.' }],
+      userErrors: [{ message: 'Unable to send recovery email.' }],
     };
   }
 }
