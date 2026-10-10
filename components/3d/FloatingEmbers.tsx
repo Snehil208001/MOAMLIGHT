@@ -10,6 +10,32 @@ interface FloatingEmbersProps {
   isNightMode?: boolean;
 }
 
+// Module-level cache for the ember texture to prevent recreating CanvasTexture
+// on every component remount (performance optimization)
+let emberTextureCache: THREE.CanvasTexture | null = null;
+function getEmberTexture(): THREE.CanvasTexture {
+  if (emberTextureCache) return emberTextureCache;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 64;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gradient.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)');
+    gradient.addColorStop(0.25, 'rgba(255, 215, 0, 0.9)');
+    gradient.addColorStop(0.55, 'rgba(255, 140, 0, 0.45)');
+    gradient.addColorStop(0.85, 'rgba(255, 100, 0, 0.12)');
+    gradient.addColorStop(1.0, 'rgba(255, 100, 0, 0.0)');
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 64, 64);
+  }
+  emberTextureCache = new THREE.CanvasTexture(canvas);
+  emberTextureCache.needsUpdate = true;
+  return emberTextureCache;
+}
+
 /**
  * 🧊 AGENT 2: FloatingEmbers
  * 
@@ -124,26 +150,7 @@ export const FloatingEmbers: React.FC<FloatingEmbersProps> = ({
   }, [count, isNightMode]);
 
   // Programmatic circular multi-stop glowing radial particle texture
-  const particleTexture = useMemo(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 64;
-    canvas.height = 64;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-      gradient.addColorStop(0.0, 'rgba(255, 255, 255, 1.0)');
-      gradient.addColorStop(0.25, 'rgba(255, 215, 0, 0.9)');
-      gradient.addColorStop(0.55, 'rgba(255, 140, 0, 0.45)');
-      gradient.addColorStop(0.85, 'rgba(255, 100, 0, 0.12)');
-      gradient.addColorStop(1.0, 'rgba(255, 100, 0, 0.0)');
-
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, 64, 64);
-    }
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.needsUpdate = true;
-    return texture;
-  }, []);
+  const particleTexture = useMemo(() => getEmberTexture(), []);
 
   useFrame((state, delta) => {
     if (!pointsRef.current) return;

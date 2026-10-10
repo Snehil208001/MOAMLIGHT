@@ -10,6 +10,31 @@ interface ScentSmokeSimulationProps {
   isNightMode?: boolean;
 }
 
+// Module-level cache for the smoke texture to prevent recreating CanvasTexture
+// on every component remount (performance optimization)
+let smokeTextureCache: THREE.CanvasTexture | null = null;
+function getSmokeTexture(): THREE.CanvasTexture {
+  if (smokeTextureCache) return smokeTextureCache;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 64;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gradient.addColorStop(0, 'rgba(255, 248, 240, 0.9)');
+    gradient.addColorStop(0.3, 'rgba(255, 230, 200, 0.45)');
+    gradient.addColorStop(0.7, 'rgba(240, 230, 220, 0.15)');
+    gradient.addColorStop(1, 'rgba(240, 230, 220, 0)');
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 64, 64);
+  }
+  smokeTextureCache = new THREE.CanvasTexture(canvas);
+  smokeTextureCache.needsUpdate = true;
+  return smokeTextureCache;
+}
+
 /**
  * 🧊 AGENT 2: ScentSmokeSimulation
  * Real-time curling fluid/smoke aroma simulation rising gracefully from the candle flame.
@@ -55,25 +80,7 @@ export const ScentSmokeSimulation: React.FC<ScentSmokeSimulationProps> = ({
   }, [origin]);
 
   // Procedural soft circular smoke particle texture
-  const smokeTexture = useMemo(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 64;
-    canvas.height = 64;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-      gradient.addColorStop(0, 'rgba(255, 248, 240, 0.9)');
-      gradient.addColorStop(0.3, 'rgba(255, 230, 200, 0.45)');
-      gradient.addColorStop(0.7, 'rgba(240, 230, 220, 0.15)');
-      gradient.addColorStop(1, 'rgba(240, 230, 220, 0)');
-
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, 64, 64);
-    }
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.needsUpdate = true;
-    return texture;
-  }, []);
+  const smokeTexture = useMemo(() => getSmokeTexture(), []);
 
   useFrame((state) => {
     if (!pointsRef.current) return;
