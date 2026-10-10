@@ -77,7 +77,7 @@ export const CartDrawer: React.FC = () => {
               </div>
               <button
                 onClick={closeCart}
-                className="p-1 rounded-full text-charcoal-muted hover:text-charcoal hover:bg-warm-cream transition-colors"
+                className="p-1 rounded-full text-charcoal-muted hover:text-charcoal hover:bg-warm-cream transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60"
                 aria-label="Close cart"
               >
                 <X className="w-5 h-5" />
