@@ -15,3 +15,8 @@
 **Vulnerability:** The API route `/api/auth/login` and the Shopify GraphQL wrapper functions in `src/integrations/shopify/api.ts` returned raw `err.message` values directly to the client in HTTP 401/500 JSON responses, causing potential information leakage of internal stack details or network configurations.
 **Learning:** Returning unhandled exception messages to clients in API responses can leak internal stack details, infrastructure info, or third-party connection errors. These details should be logged securely on the server but never exposed to the client.
 **Prevention:** Always sanitize HTTP error responses to return generic, user-friendly messages rather than passing raw Error objects.
+
+## 2026-10-07 - React Context Error Message Information Leak Fix
+**Vulnerability:** The client-side `AuthContext.tsx` provider passed raw `err.message` exceptions directly into the frontend state during `login`, `register`, and `recoverPassword` operations, causing potential information leakage of unhandled API details or fetch errors in the UI.
+**Learning:** Returning unhandled exception messages from catch blocks directly to the UI layer can leak technical infrastructure info or unexpected error shapes. These details should be logged securely using `console.error` for debugging but never exposed as user-facing strings.
+**Prevention:** Always sanitize UI error states to return generic, user-friendly messages rather than passing raw Error objects or `.message` properties.
