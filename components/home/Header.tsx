@@ -48,7 +48,7 @@ export const Header: React.FC = () => {
               <div className="flex items-center lg:hidden">
                 <button
                   onClick={() => setMobileMenuOpen(true)}
-                  className="p-2 hover:text-amber-500 transition-colors cursor-pointer"
+                  className="p-2 hover:text-amber-500 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60 rounded"
                   aria-label="Open navigation menu"
                 >
                   <Menu className="w-6 h-6" />
@@ -93,7 +93,7 @@ export const Header: React.FC = () => {
               {/* Search Trigger */}
               <button
                 onClick={() => setSearchOpen(true)}
-                className="p-2 sm:p-2.5 hover:text-amber-500 transition-colors cursor-pointer min-w-[40px] min-h-[40px] flex items-center justify-center"
+                className="p-2 sm:p-2.5 hover:text-amber-500 transition-colors cursor-pointer min-w-[40px] min-h-[40px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60 rounded"
                 aria-label="Search fragrances"
               >
                 <Search className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -104,7 +104,7 @@ export const Header: React.FC = () => {
                 <div className="relative hidden sm:block">
                   <button
                     onClick={() => setAccountMenuOpen((prev) => !prev)}
-                    className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1.5 rounded-full border border-[var(--border-daynight)] hover:border-amber-500/50 bg-warm-cream/30 hover:bg-warm-cream/50 transition-colors cursor-pointer text-xs"
+                    className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1.5 rounded-full border border-[var(--border-daynight)] hover:border-amber-500/50 bg-warm-cream/30 hover:bg-warm-cream/50 transition-colors cursor-pointer text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60"
                     aria-label="Customer sanctuary account menu"
                   >
                     <span className="w-6 h-6 rounded-full bg-amber-500/10 text-amber-600 font-serif font-bold text-xs flex items-center justify-center shrink-0">
@@ -174,7 +174,7 @@ export const Header: React.FC = () => {
               ) : (
                 <a
                   href={accountUrl}
-                  className="hidden sm:flex p-2 sm:p-2.5 hover:text-amber-500 transition-colors cursor-pointer min-w-[40px] min-h-[40px] items-center justify-center"
+                  className="hidden sm:flex p-2 sm:p-2.5 hover:text-amber-500 transition-colors cursor-pointer min-w-[40px] min-h-[40px] items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60 rounded"
                   aria-label="Sign In with Email or Phone OTP (Shopify)"
                   title="Sign In with Email or Phone OTP"
                 >
@@ -185,7 +185,7 @@ export const Header: React.FC = () => {
               {/* Cart Drawer Trigger */}
               <button
                 onClick={openCart}
-                className="relative p-2 sm:p-2.5 hover:text-amber-500 transition-colors cursor-pointer min-w-[40px] min-h-[40px] flex items-center justify-center"
+                className="relative p-2 sm:p-2.5 hover:text-amber-500 transition-colors cursor-pointer min-w-[40px] min-h-[40px] flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60 rounded"
                 aria-label="View shopping bag"
               >
                 <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -233,7 +233,7 @@ export const Header: React.FC = () => {
                   </div>
                   <button
                     onClick={() => setMobileMenuOpen(false)}
-                    className="p-1 rounded-full text-charcoal-muted hover:text-charcoal"
+                    className="p-1 rounded-full text-charcoal-muted hover:text-charcoal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60"
                     aria-label="Close menu"
                   >
                     <X className="w-5 h-5" />
