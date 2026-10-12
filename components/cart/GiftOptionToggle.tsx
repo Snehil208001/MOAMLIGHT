@@ -9,8 +9,9 @@ export const GiftOptionToggle: React.FC = () => {
 
   return (
     <div className="bg-warm-cream/50 border border-warm-border rounded-xl p-3.5 space-y-2.5">
-      <label className="flex items-start gap-2.5 cursor-pointer select-none">
+      <label htmlFor="gift-checkbox" className="flex items-start gap-2.5 cursor-pointer select-none">
         <input
+          id="gift-checkbox"
           type="checkbox"
           checked={isGift}
           onChange={(e) => setGiftOptions(e.target.checked, giftMessage)}
@@ -30,6 +31,8 @@ export const GiftOptionToggle: React.FC = () => {
       {isGift && (
         <div className="pt-2">
           <textarea
+            id="gift-message"
+            aria-label="Gift message"
             value={giftMessage}
             onChange={(e) => setGiftOptions(true, e.target.value)}
             maxLength={150}
