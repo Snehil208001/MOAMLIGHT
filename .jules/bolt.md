@@ -9,3 +9,7 @@
 ## 2024-10-12 - Three.js CanvasTexture Initialization
 **Learning:** Initializing `THREE.CanvasTexture` alongside a canvas element within a component-scoped `useMemo` in R3F causes memory leaks and GPU upload overhead upon component remounts.
 **Action:** Always extract procedural texture and canvas generation into lazy-initialized module-level singleton functions to guarantee they are created only once per session.
+
+## 2024-10-25 - React Search Input Debouncing
+**Learning:** Frequent state updates from text inputs triggering expensive `Array.filter` operations on large arrays within `useMemo` can cause main thread blocking and noticeable input lag.
+**Action:** Always debounce the query value used for expensive filtering computations (e.g., via a custom `useDebounce` hook) rather than debouncing the `onChange` handler itself. This ensures the input remains instantly responsive while delaying the heavy lifting.
