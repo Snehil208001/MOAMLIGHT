@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
+import { useDebounce } from '@/hooks/useDebounce';
 import { Modal } from '@/components/ui/Modal';
 import { PRODUCTS } from '@/data/products';
 import { formatINR, getOptimizedImageUrl } from '@/lib/formatters';
@@ -21,11 +22,14 @@ export const Header: React.FC = () => {
   const { isNightMode } = useDayNight();
   const accountUrl = process.env.NEXT_PUBLIC_SHOPIFY_CUSTOMER_ACCOUNT_URL || 'https://eyj01h-j3.myshopify.com/account/login';
 
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
   // ⚡ Bolt: Memoize the filtered products calculation to prevent expensive array iterations on every re-render when the search query hasn't changed.
+  // Using a debounced search query ensures that the expensive filter operation is only triggered after the user stops typing, keeping the input responsive.
   const filteredProducts = useMemo(() => {
-    return searchQuery.trim()
+    return debouncedSearchQuery.trim()
       ? PRODUCTS.filter((p) => {
-          const query = searchQuery.toLowerCase();
+          const query = debouncedSearchQuery.toLowerCase();
           return (
             p.title.toLowerCase().includes(query) ||
             p.category.toLowerCase().includes(query) ||
@@ -35,7 +39,7 @@ export const Header: React.FC = () => {
           );
         })
       : [];
-  }, [searchQuery]);
+  }, [debouncedSearchQuery]);
 
   return (
     <>
