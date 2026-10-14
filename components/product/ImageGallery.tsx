@@ -40,7 +40,8 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
         <button
           type="button"
           onClick={() => setActiveIndex(0)}
-          className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all ${
+          aria-current={activeItem.type === 'image' ? 'true' : undefined}
+          className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60 ${
             activeItem.type === 'image'
               ? 'bg-warm-cream border border-terracotta/40 text-charcoal shadow-sm'
               : 'bg-warm-cream/50 border border-warm-border text-charcoal-muted hover:text-charcoal'
@@ -54,7 +55,8 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
           <button
             type="button"
             onClick={() => setActiveIndex(images.length)}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all ${
+            aria-current={activeItem.type === 'video' ? 'true' : undefined}
+            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60 ${
               activeItem.type === 'video'
                 ? 'bg-amber/20 border border-amber text-charcoal font-bold shadow-sm'
                 : 'bg-warm-cream/50 border border-warm-border text-charcoal-muted hover:text-charcoal hover:border-amber/40'
@@ -79,7 +81,8 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                 <button
                   key={`thumb-img-${idx}`}
                   onClick={() => setActiveIndex(idx)}
-                  className={`w-16 h-20 sm:w-20 sm:h-24 rounded-xl overflow-hidden border-2 transition-all shrink-0 bg-warm-cream relative ${
+                  aria-current={isSelected ? 'true' : undefined}
+                  className={`w-16 h-20 sm:w-20 sm:h-24 rounded-xl overflow-hidden border-2 transition-all shrink-0 bg-warm-cream relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60 ${
                     isSelected
                       ? 'border-terracotta ring-2 ring-terracotta/20 scale-105'
                       : 'border-warm-border opacity-70 hover:opacity-100'
@@ -102,7 +105,8 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
               <button
                 key={`thumb-vid-${idx}`}
                 onClick={() => setActiveIndex(idx)}
-                className={`w-16 h-20 sm:w-20 sm:h-24 rounded-xl overflow-hidden border-2 transition-all shrink-0 bg-charcoal relative group ${
+                aria-current={isSelected ? 'true' : undefined}
+                className={`w-16 h-20 sm:w-20 sm:h-24 rounded-xl overflow-hidden border-2 transition-all shrink-0 bg-charcoal relative group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60 ${
                   isSelected
                     ? 'border-amber ring-2 ring-amber/30 scale-105'
                     : 'border-warm-border opacity-85 hover:opacity-100'
@@ -188,7 +192,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsMuted((prev) => !prev)}
-                  className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-charcoal/80 hover:bg-charcoal text-warm-linen backdrop-blur-md border border-white/20 shadow-lg transition-all"
+                  className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-charcoal/80 hover:bg-charcoal text-warm-linen backdrop-blur-md border border-white/20 shadow-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60"
                   title={isMuted ? 'Click to Unmute Audio' : 'Mute Audio'}
                   aria-label={isMuted ? 'Unmute video audio' : 'Mute video audio'}
                 >
