@@ -2,7 +2,6 @@
 
 import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Text } from '@react-three/drei';
 import * as THREE from 'three';
 import { ScentSmokeSimulation } from './ScentSmokeSimulation';
 
@@ -26,14 +25,105 @@ export const EngravableCandle: React.FC<EngravableCandleProps> = ({
   const internalLightRef = useRef<THREE.PointLight>(null);
   const causticRingRef = useRef<THREE.Mesh>(null);
 
-  // Dynamic font sizing based on character count so engraving never overflows
-  const fontSize = useMemo(() => {
-    const len = engravingText.trim().length;
-    if (len <= 8) return 0.072;
-    if (len <= 14) return 0.058;
-    if (len <= 20) return 0.048;
-    return 0.042;
-  }, [engravingText]);
+  const displayText = engravingText.trim() ? engravingText.trim().toUpperCase() : 'MOAMLIGHT';
+  const hasCustomEngraving = engravingText.trim().length > 0;
+
+  // Real-time CanvasTexture for the engraved gold plaque (100% offline, zero network delay, never suspends)
+  const plaqueTexture = useMemo(() => {
+    if (typeof document === 'undefined') return null;
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 768;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+
+    // Metallic brushed brass background
+    const bgGrad = ctx.createLinearGradient(0, 0, 1024, 768);
+    bgGrad.addColorStop(0.0, '#E6C762');
+    bgGrad.addColorStop(0.3, '#F5DE88');
+    bgGrad.addColorStop(0.5, '#D4AF37');
+    bgGrad.addColorStop(0.7, '#C59C27');
+    bgGrad.addColorStop(1.0, '#E1BF54');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, 1024, 768);
+
+    // Outer & inner decorative embossed borders
+    ctx.strokeStyle = '#997316';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(36, 36, 952, 696);
+
+    ctx.strokeStyle = '#FFE89E';
+    ctx.lineWidth = 2.5;
+    ctx.strokeRect(48, 48, 928, 672);
+
+    // Decorative corner rivets
+    const drawRivet = (x: number, y: number) => {
+      ctx.beginPath();
+      ctx.arc(x, y, 7, 0, Math.PI * 2);
+      ctx.fillStyle = '#6D4F0C';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x - 2, y - 2, 3, 0, Math.PI * 2);
+      ctx.fillStyle = '#FFF2BD';
+      ctx.fill();
+    };
+    drawRivet(48, 48);
+    drawRivet(976, 48);
+    drawRivet(48, 720);
+    drawRivet(976, 720);
+
+    // Top emblem
+    ctx.fillStyle = '#6D4F0C';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '26px serif';
+    ctx.fillText('✦   ✧   ✦', 512, 160);
+
+    // Engraved Typography (with subtle bevel / engraved shadow)
+    const mainFontSize = displayText.length > 14 ? 44 : displayText.length > 9 ? 52 : 62;
+    const mainFontFamily = engravingFont === 'script'
+      ? 'italic Georgia, "Cormorant Garamond", serif'
+      : '"Cinzel", "Cormorant Garamond", Georgia, serif';
+
+    // Engraved highlight (sunken text bevel)
+    ctx.fillStyle = '#FFEAA8';
+    ctx.font = `700 ${mainFontSize}px ${mainFontFamily}`;
+    ctx.letterSpacing = displayText.length > 14 ? '4px' : '8px';
+    ctx.fillText(displayText, 513, 351);
+
+    // Engraved deep shadow
+    ctx.fillStyle = '#3E2A05';
+    ctx.fillText(displayText, 512, 350);
+
+    // Divider
+    ctx.strokeStyle = '#6D4F0C';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(320, 430);
+    ctx.lineTo(704, 430);
+    ctx.stroke();
+
+    // Sub-heading
+    ctx.fillStyle = '#4E380E';
+    ctx.font = '600 22px "Plus Jakarta Sans", "Montserrat", system-ui, sans-serif';
+    ctx.letterSpacing = '5px';
+    const subText = hasCustomEngraving
+      ? '✦ BESPOKE ARTISANAL ENGRAVING ✦'
+      : 'BOTANICAL SOY WAX · ATELIER';
+    ctx.fillText(subText, 512, 500);
+
+    // Origin stamp
+    ctx.fillStyle = '#6D4F0C';
+    ctx.font = '500 16px "Plus Jakarta Sans", "Montserrat", system-ui, sans-serif';
+    ctx.letterSpacing = '4px';
+    ctx.fillText('HAND-POURED IN INDIA', 512, 580);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.generateMipmaps = true;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.needsUpdate = true;
+    return texture;
+  }, [displayText, hasCustomEngraving, engravingFont]);
 
   // Color targets
   const dayGlassColor = useMemo(() => new THREE.Color('#FFFFFF'), []);
@@ -159,121 +249,33 @@ export const EngravableCandle: React.FC<EngravableCandleProps> = ({
     }
   });
 
-  const displayText = engravingText.trim() ? engravingText.trim().toUpperCase() : 'MOAMLIGHT';
-  const hasCustomEngraving = engravingText.trim().length > 0;
-
   return (
     <group ref={groupRef} position={[0, -0.08, 0]}>
       {/* ================================================================= */}
-      {/* 1. PHYSICAL FROSTED GLASS JAR                                     */}
+      {/* 1. BOTANICAL SOY WAX CORE & MELT POOL (Color matched to scent)   */}
       {/* ================================================================= */}
-      <mesh material={physicalFrostedGlassMaterial} position={[0, 0, 0]}>
-        <cylinderGeometry args={[1.06, 1.03, 2.02, 64, 1, true]} />
-      </mesh>
-      <mesh material={physicalFrostedGlassMaterial} position={[0, -0.96, 0]}>
-        <cylinderGeometry args={[1.03, 0.98, 0.22, 64]} />
-      </mesh>
-      <mesh material={physicalFrostedGlassMaterial} position={[0, 1.01, 0]}>
-        <torusGeometry args={[1.045, 0.024, 16, 64]} />
-      </mesh>
-      <mesh material={royalGoldBrassMaterial} position={[0, 1.01, 0]}>
-        <torusGeometry args={[1.055, 0.022, 16, 64]} />
-      </mesh>
-      <mesh material={royalGoldBrassMaterial} position={[0, -1.04, 0]}>
-        <torusGeometry args={[1.005, 0.025, 16, 64]} />
-      </mesh>
-
-      {/* ================================================================= */}
-      {/* 2. BOTANICAL SOY WAX CORE & MELT POOL (Color matched to scent)   */}
-      {/* ================================================================= */}
-      <mesh material={botanicalWaxMaterial} position={[0, -0.16, 0]}>
+      <mesh material={botanicalWaxMaterial} position={[0, -0.16, 0]} renderOrder={1}>
         <cylinderGeometry args={[0.96, 0.93, 1.48, 64]} />
       </mesh>
-      <mesh material={moltenWaxMaterial} position={[0, 0.58, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh material={moltenWaxMaterial} position={[0, 0.58, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={1}>
         <circleGeometry args={[0.96, 64]} />
       </mesh>
 
       {/* ================================================================= */}
-      {/* 3. REAL-TIME 3D ENGRAVED BESPOKE GOLD PLAQUE                      */}
+      {/* 2. COTTON WICK & EMBER                                            */}
       {/* ================================================================= */}
-      {/* Artisan Plaque Mount on Glass Surface */}
-      <mesh position={[0, 0.04, 1.066]}>
-        <planeGeometry args={[0.94, 0.74]} />
-        <meshStandardMaterial
-          color="#FFFDF9"
-          roughness={0.55}
-          metalness={0.02}
-          transparent
-          opacity={0.95}
-        />
-      </mesh>
-
-      {/* Metallic Gold Framing Rim */}
-      <mesh position={[0, 0.04, 1.069]}>
-        <planeGeometry args={[0.88, 0.68]} />
-        <meshStandardMaterial
-          color="#D4AF37"
-          roughness={0.25}
-          metalness={0.88}
-          transparent
-          opacity={0.35}
-        />
-      </mesh>
-
-      {/* Real-time 3D Typography Rendered with Gold Metallic Shader */}
-      <group position={[0, hasCustomEngraving ? 0.06 : 0.05, 1.074]}>
-        <Text
-          fontSize={fontSize}
-          letterSpacing={engravingFont === 'script' ? 0.06 : 0.12}
-          anchorX="center"
-          anchorY="middle"
-          maxWidth={0.78}
-          textAlign="center"
-        >
-          {displayText}
-          <meshStandardMaterial
-            color="#D4AF37"
-            metalness={0.94}
-            roughness={0.2}
-            emissive="#382900"
-            emissiveIntensity={0.15}
-          />
-        </Text>
-
-        {/* Sub-label indicating Bespoke Atelier Craftsmanship */}
-        <Text
-          position={[0, -0.15, 0]}
-          fontSize={0.028}
-          letterSpacing={0.16}
-          anchorX="center"
-          anchorY="middle"
-          maxWidth={0.7}
-          textAlign="center"
-        >
-          {hasCustomEngraving ? '✦ BESPOKE ARTISANAL ENGRAVING ✦' : 'BOTANICAL SOY WAX · ATELIER'}
-          <meshStandardMaterial
-            color="#8A775C"
-            roughness={0.4}
-            metalness={0.2}
-          />
-        </Text>
-      </group>
-
-      {/* ================================================================= */}
-      {/* 4. COTTON WICK & EMBER                                            */}
-      {/* ================================================================= */}
-      <mesh material={wickMaterial} position={[0, 0.72, 0]}>
+      <mesh material={wickMaterial} position={[0, 0.72, 0]} renderOrder={1}>
         <cylinderGeometry args={[0.02, 0.023, 0.28, 16]} />
       </mesh>
-      <mesh position={[0, 0.85, 0]}>
+      <mesh position={[0, 0.85, 0]} renderOrder={1}>
         <sphereGeometry args={[0.038, 16, 16]} />
         <meshBasicMaterial color="#FF3B00" />
       </mesh>
 
       {/* ================================================================= */}
-      {/* 5. VOLUMETRIC FLAME & SCENT SMOKE SIMULATION                      */}
+      {/* 3. VOLUMETRIC FLAME & SCENT SMOKE SIMULATION                      */}
       {/* ================================================================= */}
-      <group ref={flameGroupRef} position={[0, 0.99, 0]}>
+      <group ref={flameGroupRef} position={[0, 0.99, 0]} renderOrder={1}>
         <mesh material={flameOuterMaterial} position={[0, 0, 0]}>
           <coneGeometry args={[0.078, 0.29, 24]} />
         </mesh>
@@ -284,6 +286,48 @@ export const EngravableCandle: React.FC<EngravableCandleProps> = ({
           <sphereGeometry args={[0.24, 20, 20]} />
         </mesh>
       </group>
+
+      {/* ================================================================= */}
+      {/* 4. PHYSICAL FROSTED GLASS JAR                                     */}
+      {/* ================================================================= */}
+      <mesh material={physicalFrostedGlassMaterial} position={[0, 0, 0]} renderOrder={2}>
+        <cylinderGeometry args={[1.06, 1.03, 2.02, 64, 1, true]} />
+      </mesh>
+      <mesh material={physicalFrostedGlassMaterial} position={[0, -0.96, 0]} renderOrder={2}>
+        <cylinderGeometry args={[1.03, 0.98, 0.22, 64]} />
+      </mesh>
+      <mesh material={physicalFrostedGlassMaterial} position={[0, 1.01, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={2}>
+        <torusGeometry args={[1.045, 0.024, 16, 64]} />
+      </mesh>
+      <mesh material={royalGoldBrassMaterial} position={[0, 1.01, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={2}>
+        <torusGeometry args={[1.055, 0.022, 16, 64]} />
+      </mesh>
+      <mesh material={royalGoldBrassMaterial} position={[0, -1.04, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={2}>
+        <torusGeometry args={[1.005, 0.025, 16, 64]} />
+      </mesh>
+
+      {/* ================================================================= */}
+      {/* 5. REAL-TIME 3D ENGRAVED BESPOKE GOLD PLAQUE                      */}
+      {/* ================================================================= */}
+      {/* Metallic Gold Framing Rim */}
+      <mesh position={[0, 0.04, 1.068]} renderOrder={3}>
+        <planeGeometry args={[0.96, 0.72]} />
+        <meshStandardMaterial
+          color="#D4AF37"
+          roughness={0.25}
+          metalness={0.9}
+        />
+      </mesh>
+
+      {/* Real-time Engraved Plaque Canvas Surface */}
+      <mesh position={[0, 0.04, 1.071]} renderOrder={4}>
+        <planeGeometry args={[0.92, 0.69]} />
+        <meshStandardMaterial
+          map={plaqueTexture || undefined}
+          roughness={0.35}
+          metalness={0.4}
+        />
+      </mesh>
 
       {/* Fluid Scent Smoke Simulation rising from flame tip */}
       <ScentSmokeSimulation origin={[0, 1.15, 0]} isNightMode={isNightMode} />

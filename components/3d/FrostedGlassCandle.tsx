@@ -2,7 +2,6 @@
 
 import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Text } from '@react-three/drei';
 import * as THREE from 'three';
 
 export interface FrostedGlassCandleProps {
@@ -30,17 +29,126 @@ export const FrostedGlassCandle: React.FC<FrostedGlassCandleProps> = ({
   const targetRotation = useRef({ x: 0, y: 0 });
   const mouseVelocity = useRef({ x: 0, y: 0, lastX: 0, lastY: 0 });
 
-  // Dynamic font sizing based on character count so engraving never overflows glass boundary
-  const fontSize = useMemo(() => {
-    const len = engravingText.trim().length;
-    if (len <= 8) return 0.072;
-    if (len <= 14) return 0.058;
-    if (len <= 20) return 0.048;
-    return 0.042;
-  }, [engravingText]);
-
   const displayText = engravingText.trim() ? engravingText.trim().toUpperCase() : 'MOAMLIGHT';
   const hasCustomEngraving = engravingText.trim().length > 0;
+
+  // Real-time CanvasTexture for the candle label (100% offline, zero network delay, never suspends)
+  const labelTexture = useMemo(() => {
+    if (typeof document === 'undefined') return null;
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 768;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+
+    // Background paper texture with soft subtle cream tone
+    ctx.fillStyle = '#FAF7F2';
+    ctx.fillRect(0, 0, 1024, 768);
+
+    // Subtle paper depth gradient
+    const grad = ctx.createRadialGradient(512, 384, 80, 512, 384, 520);
+    grad.addColorStop(0, 'rgba(255, 253, 249, 0.7)');
+    grad.addColorStop(1, 'rgba(238, 230, 218, 0.55)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 1024, 768);
+
+    // Outer Gold Foil Border
+    ctx.strokeStyle = '#C69B37';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(36, 36, 952, 696);
+
+    // Inner Delicate Gold Border
+    ctx.lineWidth = 2;
+    ctx.strokeRect(48, 48, 928, 672);
+
+    // Corner decorative diamond accents
+    const drawDiamond = (x: number, y: number, size: number) => {
+      ctx.beginPath();
+      ctx.moveTo(x, y - size);
+      ctx.lineTo(x + size, y);
+      ctx.lineTo(x, y + size);
+      ctx.lineTo(x - size, y);
+      ctx.closePath();
+      ctx.fillStyle = '#C69B37';
+      ctx.fill();
+    };
+    drawDiamond(48, 48, 7);
+    drawDiamond(976, 48, 7);
+    drawDiamond(48, 720, 7);
+    drawDiamond(976, 720, 7);
+
+    // Star/Flame Flourish at top of label
+    ctx.fillStyle = '#C69B37';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '26px serif';
+    // Star/Flame Flourish at top of label
+    ctx.fillStyle = '#C69B37';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '26px serif';
+    ctx.fillText('✦   ✧   ✦', 512, 160);
+
+    // Main Brand / Engraving Typography
+    ctx.fillStyle = '#110D09';
+    const mainFontSize = displayText.length > 14 ? 46 : displayText.length > 9 ? 56 : 66;
+    const mainFontFamily = engravingFont === 'script'
+      ? 'italic Georgia, "Cormorant Garamond", serif'
+      : '"Cinzel", "Cormorant Garamond", Georgia, serif';
+    ctx.font = `bold ${mainFontSize}px ${mainFontFamily}`;
+    ctx.letterSpacing = displayText.length > 14 ? '4px' : '8px';
+    ctx.fillText(displayText, 512, 345);
+
+    // Decorative divider line under brand name
+    ctx.strokeStyle = '#D4AF37';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(310, 425);
+    ctx.lineTo(714, 425);
+    ctx.stroke();
+
+    // Sub-heading
+    ctx.fillStyle = '#65533F';
+    ctx.font = '600 24px "Plus Jakarta Sans", "Montserrat", system-ui, sans-serif';
+    ctx.letterSpacing = '5px';
+    const subText = hasCustomEngraving
+      ? 'BESPOKE ARTISANAL ENGRAVING'
+      : 'BOTANICAL SOY WAX · ATELIER';
+    ctx.fillText(subText, 512, 495);
+
+    // Origin stamp
+    ctx.fillStyle = '#87745E';
+    ctx.font = '600 17px "Plus Jakarta Sans", "Montserrat", system-ui, sans-serif';
+    ctx.letterSpacing = '4px';
+    ctx.fillText('HAND-POURED IN INDIA', 512, 575);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.generateMipmaps = true;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.needsUpdate = true;
+    return texture;
+  }, [displayText, hasCustomEngraving, engravingFont]);
+
+  // Soft atmospheric flame bloom glow texture
+  const flameGlowTexture = useMemo(() => {
+    if (typeof document === 'undefined') return null;
+    const canvas = document.createElement('canvas');
+    canvas.width = 128;
+    canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+    grad.addColorStop(0.0, 'rgba(255, 245, 200, 1.0)');
+    grad.addColorStop(0.2, 'rgba(255, 175, 45, 0.7)');
+    grad.addColorStop(0.5, 'rgba(255, 105, 15, 0.22)');
+    grad.addColorStop(0.8, 'rgba(255, 55, 0, 0.05)');
+    grad.addColorStop(1.0, 'rgba(255, 30, 0, 0.0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 128, 128);
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.needsUpdate = true;
+    return tex;
+  }, []);
 
   // Luxury Glass Color targets for day / night atmospheric ambiance
   const dayGlassColor = useMemo(() => new THREE.Color('#FFFFFF'), []);
@@ -230,144 +338,44 @@ export const FrostedGlassCandle: React.FC<FrostedGlassCandleProps> = ({
   return (
     <group ref={groupRef} position={[0, -0.08, 0]}>
       {/* ================================================================= */}
-      {/* 1. PHYSICAL FROSTED GLASS ENCLOSURE (With refraction & caustics) */}
-      {/* ================================================================= */}
-
-      {/* Cylindrical Refractive Outer Glass Wall */}
-      <mesh material={physicalFrostedGlassMaterial} position={[0, 0, 0]}>
-        <cylinderGeometry args={[1.06, 1.03, 2.02, 64, 1, true]} />
-      </mesh>
-
-      {/* Heavy Solid Optical Glass Base (Produces light caustics underneath) */}
-      <mesh material={physicalFrostedGlassMaterial} position={[0, -0.96, 0]}>
-        <cylinderGeometry args={[1.03, 0.98, 0.22, 64]} />
-      </mesh>
-
-      {/* Precision Rounded Glass Top Rim */}
-      <mesh material={physicalFrostedGlassMaterial} position={[0, 1.01, 0]}>
-        <torusGeometry args={[1.045, 0.024, 16, 64]} />
-      </mesh>
-
-      {/* Royal Brushed Brass Collar on Upper Rim */}
-      <mesh material={royalGoldBrassMaterial} position={[0, 1.01, 0]}>
-        <torusGeometry args={[1.055, 0.022, 16, 64]} />
-      </mesh>
-
-      {/* Royal Brushed Brass Foot Ring on Bottom Base */}
-      <mesh material={royalGoldBrassMaterial} position={[0, -1.04, 0]}>
-        <torusGeometry args={[1.005, 0.025, 16, 64]} />
-      </mesh>
-
-      {/* ================================================================= */}
-      {/* 2. ARTISANAL BOTANICAL SOY WAX CORE & MOLTEN POOL                */}
+      {/* 1. ARTISANAL BOTANICAL SOY WAX CORE & MOLTEN POOL                */}
       {/* ================================================================= */}
 
       {/* Solid Botanical Soy Wax Body */}
-      <mesh material={botanicalSoyWaxMaterial} position={[0, -0.16, 0]}>
+      <mesh material={botanicalSoyWaxMaterial} position={[0, -0.16, 0]} renderOrder={1}>
         <cylinderGeometry args={[0.96, 0.93, 1.48, 64]} />
       </mesh>
 
       {/* Molten Liquid Wax Pool at Top */}
-      <mesh material={moltenWaxPoolMaterial} position={[0, 0.58, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh material={moltenWaxPoolMaterial} position={[0, 0.58, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={1}>
         <circleGeometry args={[0.96, 64]} />
       </mesh>
 
       {/* Soft Wax Meniscus Rim */}
-      <mesh material={moltenWaxPoolMaterial} position={[0, 0.582, 0]}>
+      <mesh material={moltenWaxPoolMaterial} position={[0, 0.582, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={1}>
         <torusGeometry args={[0.95, 0.015, 12, 64]} />
       </mesh>
 
       {/* ================================================================= */}
-      {/* 3. REAL-TIME 3D METALLIC GOLD ENGRAVING & ARTISANAL SEAL         */}
-      {/* ================================================================= */}
-
-      {/* Warm Cream Label Base Mount */}
-      <mesh position={[0, 0.04, 1.066]}>
-        <planeGeometry args={[0.94, 0.74]} />
-        <meshStandardMaterial
-          color="#F5EFE6"
-          roughness={0.65}
-          metalness={0.02}
-        />
-      </mesh>
-
-      {/* Royal Gold Leaf Inlay Framing Rim */}
-      <mesh position={[0, 0.04, 1.069]}>
-        <planeGeometry args={[0.88, 0.68]} />
-        <meshStandardMaterial
-          color="#C69B37"
-          roughness={0.25}
-          metalness={0.9}
-        />
-      </mesh>
-
-      {/* Inner Precision Label Surface */}
-      <mesh position={[0, 0.04, 1.070]}>
-        <planeGeometry args={[0.84, 0.64]} />
-        <meshStandardMaterial
-          color="#FFFDF9"
-          roughness={0.7}
-          metalness={0.01}
-        />
-      </mesh>
-
-      {/* Real-Time Etched Typography on Frosted Glass */}
-      <group position={[0, hasCustomEngraving ? 0.06 : 0.05, 1.074]}>
-        <Text
-          fontSize={fontSize}
-          letterSpacing={engravingFont === 'script' ? 0.06 : 0.12}
-          anchorX="center"
-          anchorY="middle"
-          maxWidth={0.78}
-          textAlign="center"
-        >
-          {displayText}
-          <meshStandardMaterial
-            color="#24170E"
-            roughness={0.3}
-            metalness={0.2}
-          />
-        </Text>
-
-        {/* Sub-label indicating Bespoke Atelier Craftsmanship */}
-        <Text
-          position={[0, -0.15, 0]}
-          fontSize={0.028}
-          letterSpacing={0.16}
-          anchorX="center"
-          anchorY="middle"
-          maxWidth={0.7}
-          textAlign="center"
-        >
-          {hasCustomEngraving ? '✦ BESPOKE ARTISANAL ENGRAVING ✦' : 'BOTANICAL SOY WAX · ATELIER'}
-          <meshStandardMaterial
-            color="#8A775C"
-            roughness={0.4}
-            metalness={0.2}
-          />
-        </Text>
-      </group>
-
-      {/* ================================================================= */}
-      {/* 4. BRAIDED COTTON WICK & RED-HOT EMBER                           */}
+      {/* 2. BRAIDED COTTON WICK & RED-HOT EMBER                           */}
       {/* ================================================================= */}
 
       {/* Charred Cotton Wick */}
-      <mesh material={braidedWickMaterial} position={[0, 0.72, 0]}>
+      <mesh material={braidedWickMaterial} position={[0, 0.72, 0]} renderOrder={1}>
         <cylinderGeometry args={[0.02, 0.023, 0.28, 16]} />
       </mesh>
 
       {/* Incandescent Carbon Ember Tip */}
-      <mesh position={[0, 0.85, 0]}>
+      <mesh position={[0, 0.85, 0]} renderOrder={1}>
         <sphereGeometry args={[0.038, 16, 16]} />
         <meshBasicMaterial color="#FF3B00" />
       </mesh>
 
       {/* ================================================================= */}
-      {/* 5. VOLUMETRIC FLAME (3-Layer Incandescent Teardrop)              */}
+      {/* 3. VOLUMETRIC FLAME (3-Layer Incandescent Teardrop)              */}
       {/* ================================================================= */}
 
-      <group ref={flameGroupRef} position={[0, 1.06, 0]}>
+      <group ref={flameGroupRef} position={[0, 1.01, 0]} renderOrder={1}>
         {/* Outer Translucent Amber Flame Body */}
         <mesh ref={flameOuterRef} material={flameOuterMaterial} position={[0, 0, 0]}>
           <coneGeometry args={[0.11, 0.36, 32]} />
@@ -378,11 +386,70 @@ export const FrostedGlassCandle: React.FC<FrostedGlassCandleProps> = ({
           <coneGeometry args={[0.055, 0.22, 32]} />
         </mesh>
 
-        {/* Volumetric Glowing Amber Aura Halo */}
-        <mesh material={flameVolumetricHaloMaterial} position={[0, 0.02, 0]}>
-          <sphereGeometry args={[0.32, 20, 20]} />
-        </mesh>
+        {/* Soft Volumetric Glowing Amber Aura Halo */}
+        <sprite position={[0, 0.05, 0]} scale={[0.75, 0.75, 1]}>
+          <spriteMaterial
+            map={flameGlowTexture || undefined}
+            transparent
+            opacity={isNightMode ? 0.9 : 0.7}
+            blending={THREE.AdditiveBlending}
+            depthWrite={false}
+          />
+        </sprite>
       </group>
+
+      {/* ================================================================= */}
+      {/* 4. PHYSICAL FROSTED GLASS ENCLOSURE (With refraction & caustics) */}
+      {/* ================================================================= */}
+
+      {/* Cylindrical Refractive Outer Glass Wall */}
+      <mesh material={physicalFrostedGlassMaterial} position={[0, 0, 0]} renderOrder={2}>
+        <cylinderGeometry args={[1.06, 1.03, 2.02, 64, 1, true]} />
+      </mesh>
+
+      {/* Heavy Solid Optical Glass Base (Produces light caustics underneath) */}
+      <mesh material={physicalFrostedGlassMaterial} position={[0, -0.96, 0]} renderOrder={2}>
+        <cylinderGeometry args={[1.03, 0.98, 0.22, 64]} />
+      </mesh>
+
+      {/* Precision Rounded Glass Top Rim */}
+      <mesh material={physicalFrostedGlassMaterial} position={[0, 1.01, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={2}>
+        <torusGeometry args={[1.045, 0.024, 16, 64]} />
+      </mesh>
+
+      {/* Royal Brushed Brass Collar on Upper Rim */}
+      <mesh material={royalGoldBrassMaterial} position={[0, 1.01, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={2}>
+        <torusGeometry args={[1.055, 0.022, 16, 64]} />
+      </mesh>
+
+      {/* Royal Brushed Brass Foot Ring on Bottom Base */}
+      <mesh material={royalGoldBrassMaterial} position={[0, -1.04, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={2}>
+        <torusGeometry args={[1.005, 0.025, 16, 64]} />
+      </mesh>
+
+      {/* ================================================================= */}
+      {/* 5. REAL-TIME ARTISANAL LABEL WITH CANVAS TEXTURE                   */}
+      {/* ================================================================= */}
+
+      {/* Royal Gold Framing Plate */}
+      <mesh position={[0, 0.04, 1.068]} renderOrder={3}>
+        <planeGeometry args={[0.96, 0.72]} />
+        <meshStandardMaterial
+          color="#C69B37"
+          roughness={0.25}
+          metalness={0.9}
+        />
+      </mesh>
+
+      {/* Fine Detail Canvas Label Surface */}
+      <mesh position={[0, 0.04, 1.071]} renderOrder={4}>
+        <planeGeometry args={[0.92, 0.69]} />
+        <meshStandardMaterial
+          map={labelTexture || undefined}
+          roughness={0.45}
+          metalness={0.06}
+        />
+      </mesh>
 
       {/* ================================================================= */}
       {/* 6. INTERNAL LIGHT SOURCE (Transmits through physical glass)       */}

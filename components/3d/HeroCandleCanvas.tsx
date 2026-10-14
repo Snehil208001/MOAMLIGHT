@@ -117,25 +117,12 @@ function ScrollDrivenCandleKinematics({ isNightMode }: { isNightMode: boolean })
 }
 
 export const HeroCandleCanvas: React.FC<HeroCandleCanvasProps> = ({ isNightMode = false }) => {
-  const [mounted, setMounted] = useState(false);
-  const [isInView, setIsInView] = useState(true);
+  const [mounted, setMounted] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsInView(entry.isIntersecting);
-      },
-      { threshold: 0.05 }
-    );
-    observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, [mounted]);
 
   if (!mounted) {
     return (
@@ -165,7 +152,7 @@ export const HeroCandleCanvas: React.FC<HeroCandleCanvasProps> = ({ isNightMode 
         }}
       />
 
-      {/* Dedicated R3F WebGL Canvas - pauses rendering when scrolled offscreen */}
+      {/* Dedicated R3F WebGL Canvas */}
       <div className="absolute inset-0 w-full h-full">
         <Canvas
           camera={{ position: [0, 0.15, 7.8], fov: 32 }}
@@ -176,7 +163,7 @@ export const HeroCandleCanvas: React.FC<HeroCandleCanvasProps> = ({ isNightMode 
           }}
           dpr={[1, 1.5]}
           shadows
-          frameloop={isInView ? 'always' : 'never'}
+          frameloop="always"
           className="w-full h-full cursor-grab active:cursor-grabbing"
         >
           <PerspectiveCamera makeDefault position={[0, 0.15, 7.8]} fov={32} />
