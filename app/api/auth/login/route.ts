@@ -47,7 +47,8 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, profile });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : 'An unexpected error occurred during sign in.';
+    console.error('[Login API] Error:', err);
+    const msg = 'An unexpected error occurred during sign in.';
     return NextResponse.json({ success: false, error: msg }, { status: 500 });
   }
 }

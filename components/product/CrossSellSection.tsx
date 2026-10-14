@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Product } from '@/types/product';
 import { PRODUCTS } from '@/data/products';
 import { ProductCard } from '@/components/home/ProductCard';
@@ -11,9 +11,10 @@ interface CrossSellSectionProps {
 }
 
 export const CrossSellSection: React.FC<CrossSellSectionProps> = ({ currentProduct }) => {
-  const pairedProducts = PRODUCTS.filter((p) =>
-    currentProduct.pairsWithSlugs.includes(p.slug)
-  );
+  // ⚡ Bolt: Memoize the paired products filtering so it doesn't run on every re-render of this section.
+  const pairedProducts = useMemo(() => {
+    return PRODUCTS.filter((p) => currentProduct.pairsWithSlugs.includes(p.slug));
+  }, [currentProduct.pairsWithSlugs]);
 
   if (pairedProducts.length === 0) return null;
 

@@ -60,8 +60,9 @@ export const CartItemRow = memo(({ item }: CartItemRowProps) => {
             </div>
             <button
               onClick={() => removeItem(item.id)}
-              className="text-charcoal-muted hover:text-terracotta p-1 transition-colors rounded"
+              className="text-charcoal-muted hover:text-terracotta p-1 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60"
               title="Remove item"
+              aria-label="Remove item"
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -73,7 +74,7 @@ export const CartItemRow = memo(({ item }: CartItemRowProps) => {
           <div className="flex items-center border border-warm-border rounded-md bg-warm-linen">
             <button
               onClick={() => updateQuantity(item.id, item.quantity - 1)}
-              className="p-1.5 text-charcoal-muted hover:text-charcoal hover:bg-warm-cream transition-colors rounded-l-md"
+              className="p-1.5 text-charcoal-muted hover:text-charcoal hover:bg-warm-cream transition-colors rounded-l-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60"
               aria-label="Decrease quantity"
             >
               <Minus className="w-3 h-3" />
@@ -83,7 +84,7 @@ export const CartItemRow = memo(({ item }: CartItemRowProps) => {
             </span>
             <button
               onClick={() => updateQuantity(item.id, item.quantity + 1)}
-              className="p-1.5 text-charcoal-muted hover:text-charcoal hover:bg-warm-cream transition-colors rounded-r-md"
+              className="p-1.5 text-charcoal-muted hover:text-charcoal hover:bg-warm-cream transition-colors rounded-r-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60"
               aria-label="Increase quantity"
             >
               <Plus className="w-3 h-3" />

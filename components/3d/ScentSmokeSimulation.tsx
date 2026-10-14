@@ -4,6 +4,32 @@ import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
+// ⚡ Bolt: Cache procedural canvas texture globally as a lazy-initialized singleton
+// to prevent recreating canvas DOM elements and THREE.CanvasTexture instances
+// across multiple component remounts, saving memory and GPU upload overhead.
+let smokeTextureInstance: THREE.CanvasTexture | null = null;
+function getSmokeTexture() {
+  if (!smokeTextureInstance) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+      gradient.addColorStop(0, 'rgba(255, 248, 240, 0.9)');
+      gradient.addColorStop(0.3, 'rgba(255, 230, 200, 0.45)');
+      gradient.addColorStop(0.7, 'rgba(240, 230, 220, 0.15)');
+      gradient.addColorStop(1, 'rgba(240, 230, 220, 0)');
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 64, 64);
+    }
+    smokeTextureInstance = new THREE.CanvasTexture(canvas);
+    smokeTextureInstance.needsUpdate = true;
+  }
+  return smokeTextureInstance;
+}
+
 interface ScentSmokeSimulationProps {
   origin?: [number, number, number];
   color?: string;
@@ -55,25 +81,7 @@ export const ScentSmokeSimulation: React.FC<ScentSmokeSimulationProps> = ({
   }, [origin]);
 
   // Procedural soft circular smoke particle texture
-  const smokeTexture = useMemo(() => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 64;
-    canvas.height = 64;
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-      const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-      gradient.addColorStop(0, 'rgba(255, 248, 240, 0.9)');
-      gradient.addColorStop(0.3, 'rgba(255, 230, 200, 0.45)');
-      gradient.addColorStop(0.7, 'rgba(240, 230, 220, 0.15)');
-      gradient.addColorStop(1, 'rgba(240, 230, 220, 0)');
-
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, 64, 64);
-    }
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.needsUpdate = true;
-    return texture;
-  }, []);
+  const smokeTexture = getSmokeTexture();
 
   useFrame((state) => {
     if (!pointsRef.current) return;

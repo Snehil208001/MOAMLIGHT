@@ -20,7 +20,7 @@ export const AnnouncementBar: React.FC = () => {
       </div>
       <button
         onClick={() => setIsVisible(false)}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-warm-linen/60 hover:text-warm-linen transition-colors p-1"
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-warm-linen/60 hover:text-warm-linen transition-colors p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warm-linen/60 rounded"
         aria-label="Dismiss announcement"
       >
         <X className="w-3.5 h-3.5" />

@@ -25,6 +25,18 @@ function safeRevalidateTag(tag: string): boolean {
   }
 }
 
+function secureCompare(a: string | null, b: string | null): boolean {
+  if (!a || !b) return false;
+  const aBuf = Buffer.from(a);
+  const bBuf = Buffer.from(b);
+  if (aBuf.length !== bBuf.length) return false;
+  try {
+    return crypto.timingSafeEqual(aBuf, bBuf);
+  } catch {
+    return false;
+  }
+}
+
 function verifyShopifyHmac(body: string, hmacHeader: string | null, secret: string): boolean {
   if (!hmacHeader || !secret) return false;
   try {
@@ -33,14 +45,7 @@ function verifyShopifyHmac(body: string, hmacHeader: string | null, secret: stri
       .update(body, 'utf8')
       .digest('base64');
 
-    const hashBuffer = Buffer.from(hash);
-    const headerBuffer = Buffer.from(hmacHeader);
-
-    if (hashBuffer.length !== headerBuffer.length) {
-      return false;
-    }
-
-    return crypto.timingSafeEqual(hashBuffer, headerBuffer);
+    return secureCompare(hash, hmacHeader);
   } catch (err) {
     console.error('[Revalidate] Error verifying HMAC signature:', err);
     return false;
@@ -62,7 +67,7 @@ export async function POST(req: NextRequest) {
   // 1. Authorization check
   const isShopifyWebhook = Boolean(hmacHeader);
   const isManualAuth =
-    secret && (querySecret === secret || customSecretHeader === secret);
+    secret && (secureCompare(querySecret, secret) || secureCompare(customSecretHeader, secret));
   const isDevBypass =
     !secret && process.env.NODE_ENV !== 'production';
 
@@ -175,7 +180,7 @@ export async function POST(req: NextRequest) {
     const errorMsg = error instanceof Error ? error.message : String(error);
     console.error('[Revalidate] Failed to process cache revalidation:', errorMsg);
     return NextResponse.json(
-      { error: `Internal server error: ${errorMsg}` },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
@@ -192,7 +197,7 @@ export async function GET(req: NextRequest) {
     const querySecret = searchParams.get('secret');
 
     const isManualAuth =
-      secret && querySecret === secret;
+      secret && secureCompare(querySecret, secret);
     const isDevBypass =
       !secret && process.env.NODE_ENV !== 'production';
 
@@ -234,6 +239,6 @@ export async function GET(req: NextRequest) {
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : String(err);
     console.error('[Revalidate GET Error]:', errorMsg);
-    return NextResponse.json({ error: errorMsg }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
