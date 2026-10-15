@@ -51,6 +51,7 @@ export const PromoCodeInput: React.FC = () => {
           <Tag className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-muted" />
           <input
             type="text"
+            aria-label="Promo code"
             value={code}
             onChange={(e) => {
               setCode(e.target.value.toUpperCase());
