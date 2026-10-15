@@ -65,6 +65,7 @@ export const NewsletterBanner: React.FC = () => {
               <input
                 type="text"
                 required
+                aria-label="Email or WhatsApp number"
                 value={contact}
                 onChange={(e) => setContact(e.target.value)}
                 placeholder="Enter Email or WhatsApp (+91)..."

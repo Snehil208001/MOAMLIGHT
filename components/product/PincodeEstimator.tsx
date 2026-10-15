@@ -38,6 +38,9 @@ export const PincodeEstimator: React.FC = () => {
       <div className="flex gap-2">
         <input
           type="text"
+          inputMode="numeric"
+          pattern="\d*"
+          aria-label="Enter 6-digit pincode"
           maxLength={6}
           value={pincode}
           onChange={(e) => {
