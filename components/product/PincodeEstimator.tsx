@@ -39,6 +39,9 @@ export const PincodeEstimator: React.FC = () => {
         <input
           type="text"
           maxLength={6}
+          inputMode="numeric"
+          pattern="\d*"
+          aria-label="Enter 6-digit pincode"
           value={pincode}
           onChange={(e) => {
             setPincode(e.target.value.replace(/\D/g, ''));
