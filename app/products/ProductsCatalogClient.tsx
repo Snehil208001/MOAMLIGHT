@@ -22,6 +22,16 @@ export function ProductsCatalogClient({ products }: ProductsCatalogClientProps) 
   const [selectedCategory, setSelectedCategory] = useState<'All' | ScentCategory>('All');
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'rating'>('featured');
 
+  // ⚡ Bolt: Memoize category counts to avoid O(N) filtering operations
+  // on every single re-render when changing selected category or sorting order.
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { All: products.length };
+    products.forEach((p) => {
+      counts[p.category] = (counts[p.category] || 0) + 1;
+    });
+    return counts;
+  }, [products]);
+
   const filteredProducts = useMemo(() => {
     let result = [...products];
 
@@ -71,7 +81,7 @@ export function ProductsCatalogClient({ products }: ProductsCatalogClientProps) 
           {/* Category Tabs */}
           <div className="flex flex-wrap items-center gap-2">
             {CATEGORIES.map((cat) => {
-              const count = cat === 'All' ? products.length : products.filter((p) => p.category === cat).length;
+              const count = categoryCounts[cat] || 0;
               const isActive = selectedCategory === cat;
               return (
                 <button
