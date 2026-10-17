@@ -50,6 +50,9 @@ export const PincodeEstimator: React.FC = () => {
             }
           }}
           placeholder="Enter 6-digit pincode (e.g. 560001)"
+          aria-label="Enter 6-digit postal code"
+          inputMode="numeric"
+          pattern="\d*"
           className="flex-1 px-3 py-2 text-xs bg-warm-linen border border-warm-border rounded-lg text-charcoal placeholder:text-charcoal-muted/60 focus:outline-none focus:border-terracotta transition-colors"
         />
         <button
