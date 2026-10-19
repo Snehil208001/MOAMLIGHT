@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ScentCategory, Product } from '@/types/product';
 import { PRODUCTS } from '@/data/products';
@@ -52,8 +52,15 @@ export const ScentExplorer: React.FC<ScentExplorerProps> = ({ products = PRODUCT
   const [activeCategory, setActiveCategory] = useState<ScentCategory>('Woody & Meditative');
   const { isNightMode } = useDayNight();
 
-  const activeMood = MOOD_TABS.find((m) => m.category === activeCategory) || MOOD_TABS[0];
-  const matchingProducts = products.filter((p) => p.category === activeCategory);
+  // ⚡ Bolt: Memoize the active mood and filtered products calculations to prevent unnecessary
+  // array search and filtering operations on every re-render (e.g. during scroll or theme changes).
+  const activeMood = useMemo(() => {
+    return MOOD_TABS.find((m) => m.category === activeCategory) || MOOD_TABS[0];
+  }, [activeCategory]);
+
+  const matchingProducts = useMemo(() => {
+    return products.filter((p) => p.category === activeCategory);
+  }, [products, activeCategory]);
 
   return (
     <section

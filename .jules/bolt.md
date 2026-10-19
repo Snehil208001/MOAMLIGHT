@@ -12,3 +12,7 @@
 ## 2026-10-14 - Debounce Search Query Input
 **Learning:** When filtering large arrays based on frequent state updates (like text inputs) within `useMemo`, calculating the derived state on every keystroke can cause lag. Debouncing the `onChange` handler makes the UI feel sluggish.
 **Action:** Always debounce the query value itself (using a custom `useDebounce` hook) rather than the `onChange` handler. This ensures the input remains instantly responsive while deferring the expensive array filtering computation until the user stops typing.
+
+## 2024-10-19 - React Memoization for Context Updates
+**Learning:** Components consuming contexts that update frequently (like scroll-based `useDayNight` context) will re-render frequently. Any derived states or expensive array operations (like `.filter()` or `.find()`) inside these components must be memoized to prevent performance bottlenecks.
+**Action:** Always wrap expensive operations in `useMemo` when they are inside components that consume frequently updating contexts, ensuring the computations only run when their actual dependencies change, not on every context-triggered re-render.
