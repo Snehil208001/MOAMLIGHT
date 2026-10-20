@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ScentCategory, Product } from '@/types/product';
 import { PRODUCTS } from '@/data/products';
@@ -52,8 +52,17 @@ export const ScentExplorer: React.FC<ScentExplorerProps> = ({ products = PRODUCT
   const [activeCategory, setActiveCategory] = useState<ScentCategory>('Woody & Meditative');
   const { isNightMode } = useDayNight();
 
-  const activeMood = MOOD_TABS.find((m) => m.category === activeCategory) || MOOD_TABS[0];
-  const matchingProducts = products.filter((p) => p.category === activeCategory);
+  // ⚡ Bolt: Memoize derived state that depends on activeCategory to prevent expensive array iterations
+  // (.find and .filter) from running on every frequent re-render triggered by the useDayNight scroll context.
+  const activeMood = useMemo(
+    () => MOOD_TABS.find((m) => m.category === activeCategory) || MOOD_TABS[0],
+    [activeCategory]
+  );
+
+  const matchingProducts = useMemo(
+    () => products.filter((p) => p.category === activeCategory),
+    [products, activeCategory]
+  );
 
   return (
     <section
