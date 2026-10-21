@@ -12,3 +12,7 @@
 ## 2026-10-14 - Debounce Search Query Input
 **Learning:** When filtering large arrays based on frequent state updates (like text inputs) within `useMemo`, calculating the derived state on every keystroke can cause lag. Debouncing the `onChange` handler makes the UI feel sluggish.
 **Action:** Always debounce the query value itself (using a custom `useDebounce` hook) rather than the `onChange` handler. This ensures the input remains instantly responsive while deferring the expensive array filtering computation until the user stops typing.
+
+## 2024-10-26 - ScentExplorer useMemo Optimization
+**Learning:** In components connected to high-frequency state like scroll positions (`useDayNight`), any computations like `Array.find` or `Array.filter` should be wrapped in `useMemo` to prevent significant performance degradation.
+**Action:** Always verify if a component consumes frequently updated context before adding derived state calculations, and memoize them appropriately.
