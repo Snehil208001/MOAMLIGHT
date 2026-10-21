@@ -39,6 +39,9 @@ export const PincodeEstimator: React.FC = () => {
         <input
           type="text"
           maxLength={6}
+          inputMode="numeric"
+          pattern="\d*"
+          aria-label="Delivery Pincode"
           value={pincode}
           onChange={(e) => {
             setPincode(e.target.value.replace(/\D/g, ''));
@@ -56,7 +59,7 @@ export const PincodeEstimator: React.FC = () => {
           type="button"
           onClick={handleCheck}
           disabled={pincode.length !== 6}
-          className="px-4 py-2 bg-charcoal hover:bg-black text-warm-linen text-xs font-semibold uppercase tracking-wider rounded-lg disabled:opacity-40 transition-colors shrink-0"
+          className="px-4 py-2 bg-charcoal hover:bg-black text-warm-linen text-xs font-semibold uppercase tracking-wider rounded-lg disabled:opacity-40 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60"
         >
           Check
         </button>
