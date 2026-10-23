@@ -6,3 +6,6 @@
 ## 2024-10-24 - Input Accessibility and Mobile UX
 **Learning:** Placeholders are not a substitute for `aria-label` or `<label>` elements for screen readers. Inputs that lack explicit labels must have an `aria-label` attribute to be accessible. Furthermore, inputs expecting numeric values (like pincodes) should use `inputMode="numeric"` and `pattern="\d*"` to trigger the optimized numeric keypad on mobile devices, greatly improving user experience.
 **Action:** Ensure all inputs, especially those relying only on placeholders or icons, have a descriptive `aria-label`. Apply `inputMode="numeric"` and `pattern="\d*"` to any input field that strictly expects numeric data to enhance mobile usability.
+## 2024-05-20 - Ensure carousel navigation buttons have keyboard focus
+**Learning:** Icon-only navigation buttons in carousels (like the CustomerReviews section) often miss keyboard-accessible focus states out-of-the-box, making navigation difficult for keyboard users.
+**Action:** When creating or auditing carousel components, always ensure navigation buttons explicitly implement 'focus-visible:' utilities tailored to the design system (e.g., 'focus-visible:ring-terracotta/60').
