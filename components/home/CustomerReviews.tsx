@@ -85,14 +85,14 @@ export const CustomerReviews: React.FC = () => {
           <div className="flex items-center gap-2 mt-6 md:mt-0">
             <button
               onClick={prevReview}
-              className="p-2.5 rounded-full border border-[var(--border-daynight)] hover:border-amber transition-colors"
+              className="p-2.5 rounded-full border border-[var(--border-daynight)] hover:border-amber transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60"
               aria-label="Previous review"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={nextReview}
-              className="p-2.5 rounded-full border border-[var(--border-daynight)] hover:border-amber transition-colors"
+              className="p-2.5 rounded-full border border-[var(--border-daynight)] hover:border-amber transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60"
               aria-label="Next review"
             >
               <ChevronRight className="w-4 h-4" />
