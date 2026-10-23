@@ -359,6 +359,7 @@ export const Header: React.FC = () => {
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-charcoal-muted" />
             <input
               type="text"
+              aria-label="Search fragrances"
               autoFocus
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
