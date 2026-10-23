@@ -9,3 +9,6 @@
 ## 2024-05-20 - Ensure carousel navigation buttons have keyboard focus
 **Learning:** Icon-only navigation buttons in carousels (like the CustomerReviews section) often miss keyboard-accessible focus states out-of-the-box, making navigation difficult for keyboard users.
 **Action:** When creating or auditing carousel components, always ensure navigation buttons explicitly implement 'focus-visible:' utilities tailored to the design system (e.g., 'focus-visible:ring-terracotta/60').
+## 2024-05-19 - Missing Keyboard Focus on Media Gallery
+**Learning:** Discovered that the custom `ImageGallery` component lacked keyboard focus indicators and ARIA state labels (`aria-current`) on its filter tabs, thumbnails, and mute toggles, making the gallery difficult to navigate for keyboard and screen reader users.
+**Action:** Applied `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60` to all interactive elements within custom galleries and `aria-current="true"` to active states. Next time, always ensure custom UI controls mirror standard button accessibility.
