@@ -104,8 +104,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return { success: true };
       } catch (err) {
         setIsLoading(false);
-        const msg = err instanceof Error ? err.message : 'An unexpected error occurred during sign in.';
-        return { success: false, error: msg };
+        console.error('[AuthContext] Login error:', err);
+        return { success: false, error: 'An unexpected error occurred during sign in.' };
       }
     },
     [syncCartIdentity]
@@ -126,8 +126,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         return await login({ email: input.email, password: input.password });
       } catch (err) {
         setIsLoading(false);
-        const msg = err instanceof Error ? err.message : 'An error occurred during account registration.';
-        return { success: false, error: msg };
+        console.error('[AuthContext] Registration error:', err);
+        return { success: false, error: 'An error occurred during account registration.' };
       }
     },
     [login]
@@ -156,8 +156,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
         return { success: true };
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Failed to send recovery email.';
-        return { success: false, error: msg };
+        console.error('[AuthContext] Recover password error:', err);
+        return { success: false, error: 'Failed to send recovery email.' };
       }
     },
     []
