@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, memo } from 'react';
+import React, { useState, useMemo, memo } from 'react';
 import Link from 'next/link';
 import { Product } from '@/types/product';
 import { useCart } from '@/context/CartContext';
@@ -25,6 +25,16 @@ export const ProductCard = memo(({ product, index = 0 }: ProductCardProps) => {
 
   const defaultVariant = product.variants[0];
   const discount = calculateDiscount(product.defaultMrp, product.defaultPrice);
+
+  // ⚡ Bolt: Memoize scent notes array creation to prevent allocating and filtering
+  // a new array on every re-render (e.g. when day/night context updates).
+  const previewNotes = useMemo(() => {
+    return [
+      product.scentPyramid?.topNotes?.[0],
+      product.scentPyramid?.heartNotes?.[0],
+      product.scentPyramid?.baseNotes?.[0],
+    ].filter(Boolean);
+  }, [product.scentPyramid]);
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -149,18 +159,9 @@ export const ProductCard = memo(({ product, index = 0 }: ProductCardProps) => {
         <div className="p-5 flex-1 flex flex-col justify-between">
           <div>
             {/* Scent Notes Preview Ribbon */}
-            {(() => {
-              const notes = [
-                product.scentPyramid?.topNotes?.[0],
-                product.scentPyramid?.heartNotes?.[0],
-                product.scentPyramid?.baseNotes?.[0],
-              ].filter(Boolean);
-              return (
-                <div className="text-[11px] font-semibold text-amber-dark dark:text-amber tracking-wider uppercase truncate mb-1">
-                  {notes.length > 0 ? notes.join(' • ') : product.tagline || product.category}
-                </div>
-              );
-            })()}
+            <div className="text-[11px] font-semibold text-amber-dark dark:text-amber tracking-wider uppercase truncate mb-1">
+              {previewNotes.length > 0 ? previewNotes.join(' • ') : product.tagline || product.category}
+            </div>
 
             {/* Title */}
             <Link
