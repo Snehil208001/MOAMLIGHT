@@ -59,7 +59,7 @@ export const PincodeEstimator: React.FC = () => {
           type="button"
           onClick={handleCheck}
           disabled={pincode.length !== 6}
-          className="px-4 py-2 bg-charcoal hover:bg-black text-warm-linen text-xs font-semibold uppercase tracking-wider rounded-lg disabled:opacity-40 transition-colors shrink-0"
+          className="px-4 py-2 bg-charcoal hover:bg-black text-warm-linen text-xs font-semibold uppercase tracking-wider rounded-lg disabled:opacity-40 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60 focus-visible:ring-offset-2"
         >
           Check
         </button>
