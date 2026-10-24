@@ -1,0 +1,29 @@
+
+> moamlight-storefront@1.0.0 dev /app
+> next dev
+
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 1774ms
+ ○ Compiling /products/[id] ...
+ ✓ Compiled /products/[id] in 17.2s (1389 modules)
+ ✓ Compiled in 1671ms (675 modules)
+ GET /products/mysore-sandalwood 200 in 20653ms
+ ○ Compiling /api/auth/session ...
+ ✓ Compiled /api/auth/session in 7.3s (718 modules)
+ GET /products/mysore-sandalwood 200 in 428ms
+ GET /api/auth/session 200 in 20ms
+ GET /api/auth/session 200 in 12ms
+ ○ Compiling /checkout ...
+ ✓ Compiled /checkout in 904ms (1398 modules)
+ GET /checkout 200 in 1126ms
+ GET /api/auth/session 200 in 34ms
+ GET /api/auth/session 200 in 10ms
+ GET /products/mysore-sandalwood 200 in 159ms
+ GET /api/auth/session 200 in 15ms
+ GET /api/auth/session 200 in 10ms
+ GET /products/mysore-sandalwood 200 in 101ms
+ GET /api/auth/session 200 in 13ms
+ GET /api/auth/session 200 in 16ms
