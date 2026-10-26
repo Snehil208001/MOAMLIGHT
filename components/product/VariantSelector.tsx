@@ -19,23 +19,24 @@ export const VariantSelector: React.FC<VariantSelectorProps> = ({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between text-xs">
-        <span className="font-semibold uppercase tracking-wider text-charcoal">
+        <span id="variant-selector-label" className="font-semibold uppercase tracking-wider text-charcoal">
           Select Vessel & Size:
         </span>
-        <span className="text-charcoal-muted">
+        <span className="text-charcoal-muted" aria-live="polite">
           {selectedVariant.weightGrams}g ({selectedVariant.burnTimeHours}+ Hours Burn)
         </span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" role="group" aria-labelledby="variant-selector-label">
         {variants.map((v) => {
           const isSelected = v.id === selectedVariant.id;
           return (
             <button
               key={v.id}
               type="button"
+              aria-pressed={isSelected}
               onClick={() => onSelectVariant(v)}
-              className={`p-3.5 rounded-xl border text-left transition-all relative ${
+              className={`p-3.5 rounded-xl border text-left transition-all relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60 ${
                 isSelected
                   ? 'border-terracotta bg-warm-cream/50 ring-2 ring-terracotta/20 shadow-sm'
                   : 'border-warm-border bg-warm-linen hover:border-terracotta/40'
