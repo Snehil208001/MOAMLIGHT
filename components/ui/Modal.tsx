@@ -63,7 +63,7 @@ export const Modal: React.FC<ModalProps> = ({
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
             transition={{ type: 'spring', duration: 0.35, bounce: 0.2 }}
             className={cn(
-              'relative w-full bg-warm-linen border border-warm-border rounded-2xl shadow-warm-lg overflow-hidden z-10',
+              'relative w-full max-h-[calc(100vh-2rem)] flex flex-col bg-warm-linen border border-warm-border rounded-2xl shadow-warm-lg overflow-hidden z-10',
               maxW[maxWidth],
               className
             )}
@@ -80,7 +80,7 @@ export const Modal: React.FC<ModalProps> = ({
                 </button>
               </div>
             )}
-            <div className="p-6">{children}</div>
+            <div className="p-5 sm:p-6 overflow-y-auto">{children}</div>
           </motion.div>
         </div>
       )}

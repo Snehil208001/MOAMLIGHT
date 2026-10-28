@@ -59,7 +59,7 @@ export const CartDrawer: React.FC = () => {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="relative w-screen lg:w-[420px] bg-white/80 backdrop-blur-[20px] shadow-2xl flex flex-col h-full z-10 border-l border-warm-border"
+            className="relative w-full max-w-full sm:max-w-md lg:max-w-[420px] bg-white/90 backdrop-blur-[20px] shadow-2xl flex flex-col h-full z-10 border-l border-warm-border"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-warm-border/40 shrink-0">
@@ -140,7 +140,7 @@ export const CartDrawer: React.FC = () => {
 
             {/* Footer Summary & Checkout */}
             {items.length > 0 && (
-              <div className="p-6 border-t border-warm-border bg-warm-cream/40 shrink-0 space-y-4">
+              <div className="p-5 sm:p-6 pb-[calc(1.25rem+env(safe-area-inset-bottom))] border-t border-warm-border bg-warm-cream/40 shrink-0 space-y-4">
                 <div className="space-y-1.5 text-xs text-charcoal-muted">
                   <div className="flex justify-between">
                     <span>Subtotal</span>

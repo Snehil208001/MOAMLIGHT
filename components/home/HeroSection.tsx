@@ -256,9 +256,9 @@ export const HeroSection = () => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: '-40px' }}
-          className="mt-14 pt-8 border-t border-warm-border/60 grid grid-cols-2 md:grid-cols-4 gap-6 text-center md:text-left"
+          className="mt-14 pt-8 border-t border-warm-border/60 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 text-center md:text-left"
         >
-          <div className="glass-panel p-4 rounded-2xl flex flex-col sm:flex-row items-center sm:items-start gap-3">
+          <div className="glass-panel p-3 sm:p-4 rounded-xl sm:rounded-2xl flex flex-col sm:flex-row items-center sm:items-start gap-2.5 sm:gap-3">
             <div className="w-10 h-10 rounded-full bg-sage-light text-sage-dark flex items-center justify-center shrink-0">
               <Leaf className="w-5 h-5" />
             </div>
@@ -272,7 +272,7 @@ export const HeroSection = () => {
             </div>
           </div>
 
-          <div className="glass-panel p-4 rounded-2xl flex flex-col sm:flex-row items-center sm:items-start gap-3">
+          <div className="glass-panel p-3 sm:p-4 rounded-xl sm:rounded-2xl flex flex-col sm:flex-row items-center sm:items-start gap-2.5 sm:gap-3">
             <div className="w-10 h-10 rounded-full bg-warm-cream text-terracotta flex items-center justify-center shrink-0 border border-warm-border/60">
               <ShieldCheck className="w-5 h-5" />
             </div>
@@ -286,7 +286,7 @@ export const HeroSection = () => {
             </div>
           </div>
 
-          <div className="glass-panel p-4 rounded-2xl flex flex-col sm:flex-row items-center sm:items-start gap-3">
+          <div className="glass-panel p-3 sm:p-4 rounded-xl sm:rounded-2xl flex flex-col sm:flex-row items-center sm:items-start gap-2.5 sm:gap-3">
             <div className="w-10 h-10 rounded-full bg-warm-cream text-terracotta flex items-center justify-center shrink-0 border border-warm-border/60">
               <Truck className="w-5 h-5" />
             </div>
@@ -300,7 +300,7 @@ export const HeroSection = () => {
             </div>
           </div>
 
-          <div className="glass-panel p-4 rounded-2xl flex flex-col sm:flex-row items-center sm:items-start gap-3">
+          <div className="glass-panel p-3 sm:p-4 rounded-xl sm:rounded-2xl flex flex-col sm:flex-row items-center sm:items-start gap-2.5 sm:gap-3">
             <div className="w-10 h-10 rounded-full bg-amber/15 text-amber flex items-center justify-center shrink-0">
               <Banknote className="w-5 h-5" />
             </div>

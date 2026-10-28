@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { StarRating } from '@/components/ui/StarRating';
 import { CheckCircle2, ChevronLeft, ChevronRight, Quote } from 'lucide-react';
 
@@ -55,19 +55,32 @@ const REVIEWS: ReviewItem[] = [
 
 export const CustomerReviews: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  const scrollToReview = (idx: number) => {
+    setCurrentIndex(idx);
+    if (carouselRef.current) {
+      const card = carouselRef.current.children[idx] as HTMLElement;
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    }
+  };
 
   const prevReview = () => {
-    setCurrentIndex((prev) => (prev === 0 ? REVIEWS.length - 1 : prev - 1));
+    const nextIdx = currentIndex === 0 ? REVIEWS.length - 1 : currentIndex - 1;
+    scrollToReview(nextIdx);
   };
 
   const nextReview = () => {
-    setCurrentIndex((prev) => (prev === REVIEWS.length - 1 ? 0 : prev + 1));
+    const nextIdx = currentIndex === REVIEWS.length - 1 ? 0 : currentIndex + 1;
+    scrollToReview(nextIdx);
   };
 
   return (
     <section className="py-20 border-b border-[var(--border-daynight)] bg-transparent">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 sm:mb-12">
           <div>
             <div className="inline-flex items-center gap-2 text-amber text-xs font-semibold uppercase tracking-widest mb-2">
               <Quote className="w-4 h-4" />
@@ -100,15 +113,18 @@ export const CustomerReviews: React.FC = () => {
           </div>
         </div>
 
-        {/* Carousel / Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Carousel / Cards Grid: Touch-scrollable snap carousel on Mobile, 2-col on Tablet, 4-col on Desktop */}
+        <div
+          ref={carouselRef}
+          className="flex md:grid overflow-x-auto snap-x snap-mandatory scrollbar-none md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 pb-2 md:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0"
+        >
           {REVIEWS.map((review, index) => {
             const isFeatured = index === currentIndex;
             return (
               <div
                 key={review.id}
-                className={`rounded-2xl p-6 flex flex-col justify-between border transition-all duration-300 ${
-                  isFeatured ? 'border-amber/50 shadow-amber-glow-card scale-[1.02]' : 'border-[var(--border-daynight)]'
+                className={`w-[85vw] max-w-sm shrink-0 snap-center md:w-auto md:shrink rounded-2xl p-6 flex flex-col justify-between border transition-all duration-300 ${
+                  isFeatured ? 'border-amber/50 shadow-amber-glow-card scale-[1.01]' : 'border-[var(--border-daynight)]'
                 }`}
                 style={{
                   backgroundColor: 'var(--card-bg-daynight)',
@@ -139,6 +155,21 @@ export const CustomerReviews: React.FC = () => {
               </div>
             );
           })}
+        </div>
+
+        {/* Mobile Swipe Pagination Dots Indicator */}
+        <div className="flex md:hidden justify-center items-center gap-2 mt-4">
+          {REVIEWS.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => scrollToReview(i)}
+              className={`h-1.5 rounded-full transition-all ${
+                i === currentIndex ? 'w-6 bg-amber' : 'w-2 bg-warm-border'
+              }`}
+              aria-label={`Go to review ${i + 1}`}
+            />
+          ))}
         </div>
       </div>
     </section>

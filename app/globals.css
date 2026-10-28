@@ -96,10 +96,12 @@ canvas {
   will-change: transform, box-shadow;
 }
 
-.card-3d:hover {
+@media (hover: hover) and (pointer: fine) {
+  .card-3d:hover {
   transform: translateY(-10px) rotateX(6deg) rotateY(-6deg) translateZ(14px);
   box-shadow: 0 25px 50px -12px rgba(255, 140, 0, 0.42), 0 0 25px rgba(255, 140, 0, 0.25);
   border-color: rgba(255, 140, 0, 0.5) !important;
+  }
 }
 
 /* Ambient Flame Flickering Animation for CSS fallback */
@@ -196,3 +198,12 @@ select {
   cursor: pointer;
 }
 
+
+/* Smooth Horizontal Scroll without visible scrollbar */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

@@ -69,7 +69,7 @@ export const NewsletterBanner: React.FC = () => {
                 value={contact}
                 onChange={(e) => setContact(e.target.value)}
                 placeholder="Enter Email or WhatsApp (+91)..."
-                className="w-full pl-10 pr-4 py-3 bg-warm-cream/50 border border-warm-border rounded-xl text-xs sm:text-sm text-charcoal placeholder:text-charcoal-muted/60 focus:outline-none focus:border-terracotta transition-colors"
+                className="w-full pl-10 pr-4 py-3 bg-warm-cream/50 border border-warm-border rounded-xl text-base sm:text-sm text-charcoal placeholder:text-charcoal-muted/60 focus:outline-none focus:border-terracotta transition-colors"
               />
             </div>
             <button

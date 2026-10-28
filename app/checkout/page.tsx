@@ -228,7 +228,7 @@ export default function CheckoutPage() {
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="e.g. Priya Sharma"
-                      className="w-full p-2.5 bg-warm-cream/40 border border-warm-border rounded-lg text-xs sm:text-sm text-charcoal focus:outline-none focus:border-terracotta"
+                      className="w-full p-2.5 bg-warm-cream/40 border border-warm-border rounded-lg text-base sm:text-sm text-charcoal focus:outline-none focus:border-terracotta"
                     />
                   </div>
 
@@ -240,7 +240,7 @@ export default function CheckoutPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="priya@example.com"
-                      className="w-full p-2.5 bg-warm-cream/40 border border-warm-border rounded-lg text-xs sm:text-sm text-charcoal focus:outline-none focus:border-terracotta"
+                      className="w-full p-2.5 bg-warm-cream/40 border border-warm-border rounded-lg text-base sm:text-sm text-charcoal focus:outline-none focus:border-terracotta"
                     />
                   </div>
 
@@ -253,7 +253,7 @@ export default function CheckoutPage() {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
                       placeholder="9876543210"
-                      className="w-full p-2.5 bg-warm-cream/40 border border-warm-border rounded-lg text-xs sm:text-sm text-charcoal focus:outline-none focus:border-terracotta"
+                      className="w-full p-2.5 bg-warm-cream/40 border border-warm-border rounded-lg text-base sm:text-sm text-charcoal focus:outline-none focus:border-terracotta"
                     />
                   </div>
 
@@ -265,7 +265,7 @@ export default function CheckoutPage() {
                       value={addressLine}
                       onChange={(e) => setAddressLine(e.target.value)}
                       placeholder="Apartment 4B, Shanti Enclave, 12th Main Rd"
-                      className="w-full p-2.5 bg-warm-cream/40 border border-warm-border rounded-lg text-xs sm:text-sm text-charcoal focus:outline-none focus:border-terracotta"
+                      className="w-full p-2.5 bg-warm-cream/40 border border-warm-border rounded-lg text-base sm:text-sm text-charcoal focus:outline-none focus:border-terracotta"
                     />
                   </div>
 
@@ -278,7 +278,7 @@ export default function CheckoutPage() {
                       value={pincode}
                       onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
                       placeholder="560038"
-                      className="w-full p-2.5 bg-warm-cream/40 border border-warm-border rounded-lg text-xs sm:text-sm text-charcoal focus:outline-none focus:border-terracotta"
+                      className="w-full p-2.5 bg-warm-cream/40 border border-warm-border rounded-lg text-base sm:text-sm text-charcoal focus:outline-none focus:border-terracotta"
                     />
                   </div>
 
@@ -290,7 +290,7 @@ export default function CheckoutPage() {
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                       placeholder="Bengaluru"
-                      className="w-full p-2.5 bg-warm-cream/40 border border-warm-border rounded-lg text-xs sm:text-sm text-charcoal focus:outline-none focus:border-terracotta"
+                      className="w-full p-2.5 bg-warm-cream/40 border border-warm-border rounded-lg text-base sm:text-sm text-charcoal focus:outline-none focus:border-terracotta"
                     />
                   </div>
                 </div>

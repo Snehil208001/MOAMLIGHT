@@ -225,7 +225,7 @@ export const Header: React.FC = () => {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="relative w-4/5 max-w-sm bg-warm-linen shadow-2xl flex flex-col h-full z-10 p-6 border-r border-warm-border justify-between"
+              className="relative w-4/5 max-w-sm bg-warm-linen shadow-2xl flex flex-col h-full z-10 p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] border-r border-warm-border justify-between"
             >
               <div>
                 <div className="flex items-center justify-between pb-6 border-b border-warm-border">
@@ -364,7 +364,7 @@ export const Header: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by scent note (e.g. Sandalwood, Saffron, Vanilla, Bergamot)..."
-              className="w-full pl-10 pr-4 py-3 bg-warm-cream/50 border border-warm-border rounded-xl text-sm text-charcoal placeholder:text-charcoal-muted/60 focus:outline-none focus:border-terracotta transition-colors"
+              className="w-full pl-10 pr-4 py-3 bg-warm-cream/50 border border-warm-border rounded-xl text-base sm:text-sm text-charcoal placeholder:text-charcoal-muted/60 focus:outline-none focus:border-terracotta transition-colors"
             />
           </div>
 

@@ -82,7 +82,7 @@ export const StickyMobileCartBar: React.FC<StickyMobileCartBarProps> = ({
           animate={{ y: 0 }}
           exit={{ y: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-warm-linen/95 backdrop-blur-md border-t border-warm-border p-3.5 shadow-2xl"
+          className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-warm-linen/95 backdrop-blur-md border-t border-warm-border p-3.5 pb-[calc(0.875rem+env(safe-area-inset-bottom))] shadow-2xl"
         >
           <div className="flex items-center justify-between gap-3 max-w-md mx-auto">
             <div className="min-w-0 flex-1">
@@ -90,7 +90,7 @@ export const StickyMobileCartBar: React.FC<StickyMobileCartBarProps> = ({
                 {product.title}
               </h4>
               <p className="text-xs text-charcoal-muted truncate">
-                {selectedVariant.name} • <span className="font-bold text-terracotta">{formatINR(selectedVariant.price)}</span>
+                {selectedVariant.name} • <span className="font-bold text-terracotta">{formatINR(currentPrice)}</span>
               </p>
             </div>
 

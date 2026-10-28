@@ -153,7 +153,7 @@ export const HeroCandleCanvas: React.FC<HeroCandleCanvasProps> = ({ isNightMode 
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-[460px] sm:h-[520px] lg:h-[600px] rounded-3xl overflow-hidden group select-none touch-pan-y bg-gradient-to-b from-warm-cream/40 to-warm-linen/20 border border-warm-border/50 shadow-sm"
+      className="relative w-full h-[360px] sm:h-[440px] md:h-[500px] lg:h-[580px] rounded-3xl overflow-hidden group select-none touch-pan-y bg-gradient-to-b from-warm-cream/40 to-warm-linen/20 border border-warm-border/50 shadow-sm"
     >
       {/* Atmospheric Ambient Backlight Glow behind the Candle */}
       <div
@@ -230,7 +230,7 @@ export const HeroCandleCanvas: React.FC<HeroCandleCanvasProps> = ({ isNightMode 
           </span>
           <span className="font-serif italic text-charcoal">Real-time 3D</span>
           <span className="text-[11px] text-charcoal-muted flex items-center gap-1 font-sans">
-            <Move className="w-3 h-3" /> Move cursor &amp; scroll to inspect
+            <Move className="w-3 h-3" /> <span className="hidden sm:inline">Move cursor &amp; scroll to inspect</span><span className="sm:hidden">Drag &amp; scroll to inspect</span>
           </span>
         </div>
       </div>

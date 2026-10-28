@@ -58,7 +58,7 @@ export const PromoCodeInput: React.FC = () => {
               setErrorMsg('');
             }}
             placeholder="PROMO CODE (e.g. MOAM10)"
-            className="w-full pl-9 pr-3 py-2 text-xs uppercase font-medium bg-warm-linen border border-warm-border rounded-lg text-charcoal placeholder:text-charcoal-muted/60 focus:outline-none focus:border-terracotta transition-colors"
+            className="w-full pl-9 pr-3 py-2 text-base sm:text-xs uppercase font-medium bg-warm-linen border border-warm-border rounded-lg text-charcoal placeholder:text-charcoal-muted/60 focus:outline-none focus:border-terracotta transition-colors"
           />
         </div>
         <button

@@ -115,7 +115,7 @@ export const EngravingStudioSelector: React.FC<EngravingStudioSelectorProps> = (
                   value={engravingText}
                   onChange={(e) => onTextChange(e.target.value.toUpperCase())}
                   placeholder="e.g. HAPPY ANNIVERSARY"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-warm-border bg-white text-sm text-charcoal placeholder:text-charcoal-muted/50 focus:outline-none focus:ring-2 focus:ring-amber/40 focus:border-amber transition-all tracking-wider font-mono uppercase"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-warm-border bg-white text-base sm:text-sm text-charcoal placeholder:text-charcoal-muted/50 focus:outline-none focus:ring-2 focus:ring-amber/40 focus:border-amber transition-all tracking-wider font-mono uppercase"
                 />
 
                 {onPreview3D && (

@@ -9,13 +9,13 @@ export const AnnouncementBar: React.FC = () => {
   if (!isVisible) return null;
 
   return (
-    <div className="bg-charcoal text-warm-linen text-xs py-2 px-4 relative z-40 border-b border-warm-border/10">
+    <div className="bg-charcoal text-warm-linen text-xs py-2 px-8 sm:px-4 relative z-40 border-b border-warm-border/10">
       <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 sm:gap-3 text-center">
         <Sparkles className="w-3.5 h-3.5 text-amber-gold shrink-0 hidden sm:inline-block" />
         <p className="font-medium tracking-wide">
-          <span>Free Express Shipping Across India on Orders Above ₹999</span>
-          <span className="mx-2 text-charcoal-muted">|</span>
-          <span>Use Code <span className="font-bold text-amber-gold underline underline-offset-2">MOAM10</span> for 10% Off</span>
+          <span>Free Express Shipping Across India Above ₹999</span>
+          <span className="hidden sm:inline mx-2 text-charcoal-muted">|</span>
+          <span className="block sm:inline mt-0.5 sm:mt-0">Use Code <span className="font-bold text-amber-gold underline underline-offset-2">MOAM10</span> for 10% Off</span>
         </p>
       </div>
       <button

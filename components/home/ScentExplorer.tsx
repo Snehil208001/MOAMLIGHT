@@ -101,7 +101,7 @@ export const ScentExplorer: React.FC<ScentExplorerProps> = ({ products = PRODUCT
               <button
                 key={tab.category}
                 onClick={() => setActiveCategory(tab.category)}
-                className={`px-5 sm:px-7 py-3 rounded-full text-xs sm:text-sm font-semibold tracking-wider transition-all duration-300 ${
+                className={`px-4 sm:px-6 md:px-7 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-semibold tracking-wider transition-all duration-300 ${
                   isActive
                     ? 'bg-amber text-charcoal shadow-amber-glow font-bold scale-105'
                     : isNightMode

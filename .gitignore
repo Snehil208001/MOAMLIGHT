@@ -53,3 +53,6 @@ Thumbs.db
 
 # Scratch and temporary scripts
 scratch/
+
+.vercel
+.env*

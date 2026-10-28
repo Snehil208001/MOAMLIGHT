@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, memo } from 'react';
+import React, { useState, useMemo, useEffect, memo } from 'react';
 import Link from 'next/link';
 import { Product } from '@/types/product';
 import { useCart } from '@/context/CartContext';
@@ -22,6 +22,13 @@ export const ProductCard = memo(({ product, index = 0 }: ProductCardProps) => {
   const { showToast } = useToast();
   const { isNightMode } = useDayNight();
   const [isHovered, setIsHovered] = useState(false);
+  const [canHover, setCanHover] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setCanHover(window.matchMedia('(hover: hover) and (pointer: fine)').matches);
+    }
+  }, []);
 
   const defaultVariant = product.variants[0];
   const discount = calculateDiscount(product.defaultMrp, product.defaultPrice);
@@ -77,7 +84,7 @@ export const ProductCard = memo(({ product, index = 0 }: ProductCardProps) => {
           backgroundColor: 'var(--card-bg-daynight)',
           borderColor: isHovered ? 'rgba(255, 140, 0, 0.5)' : 'var(--border-daynight)',
           color: 'var(--text-daynight)',
-          transform: isHovered
+          transform: (isHovered && canHover)
             ? 'rotateX(6deg) rotateY(-6deg) translateY(-8px) translateZ(14px)'
             : 'rotateX(0deg) rotateY(0deg) translateY(0px) translateZ(0px)',
           boxShadow: isHovered
@@ -140,7 +147,7 @@ export const ProductCard = memo(({ product, index = 0 }: ProductCardProps) => {
           />
 
           {/* Glassmorphism Quick Add Button Overlay */}
-          <div className="absolute inset-x-3 bottom-3 z-10 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 transform sm:translate-y-2 sm:group-hover:translate-y-0">
+          <div className={`absolute inset-x-3 bottom-3 z-10 transition-all duration-300 transform ${canHover ? 'sm:opacity-0 sm:group-hover:opacity-100 sm:translate-y-2 sm:group-hover:translate-y-0' : 'opacity-100 translate-y-0'}`}>
             <button
               onClick={handleQuickAdd}
               className={`w-full py-2.5 px-4 backdrop-blur-md rounded-xl text-xs font-semibold uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 transition-all duration-300 ${

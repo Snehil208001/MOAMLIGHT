@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, Film, Play, Volume2, VolumeX } from 'lucide-react';
+import { Camera, Film, Play, Volume2, VolumeX, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getOptimizedImageUrl } from '@/lib/formatters';
 import { ProductVideo } from '@/types/product';
 
@@ -72,7 +72,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
       {/* Main Viewport Container */}
       <div className="flex flex-col-reverse lg:flex-row gap-4">
         {/* Thumbnails Row / Column */}
-        <div className="flex lg:flex-col gap-3 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 shrink-0">
+        <div className="flex lg:flex-col gap-3 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 shrink-0 scrollbar-none">
           {mediaItems.map((item, idx) => {
             const isSelected = activeIndex === idx;
 
@@ -213,6 +213,28 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Prev / Next navigation buttons for mobile & tablet / desktop */}
+          {mediaItems.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={() => setActiveIndex((prev) => (prev > 0 ? prev - 1 : mediaItems.length - 1))}
+                aria-label="Previous image"
+                className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-warm-linen/90 hover:bg-warm-linen text-charcoal backdrop-blur-md border border-warm-border/80 shadow-md flex items-center justify-center transition-all opacity-85 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60"
+              >
+                <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveIndex((prev) => (prev < mediaItems.length - 1 ? prev + 1 : 0))}
+                aria-label="Next image"
+                className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-warm-linen/90 hover:bg-warm-linen text-charcoal backdrop-blur-md border border-warm-border/80 shadow-md flex items-center justify-center transition-all opacity-85 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60"
+              >
+                <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

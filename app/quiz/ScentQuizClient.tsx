@@ -394,7 +394,7 @@ export function ScentQuizClient() {
                     value={leadEmail}
                     onChange={(e) => setLeadEmail(e.target.value)}
                     placeholder="Enter your email address..."
-                    className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-warm-border bg-white text-sm text-charcoal placeholder:text-charcoal-muted/60 focus:outline-none focus:ring-2 focus:ring-amber/50 focus:border-amber transition-all shadow-inner"
+                    className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-warm-border bg-white text-base sm:text-sm text-charcoal placeholder:text-charcoal-muted/60 focus:outline-none focus:ring-2 focus:ring-amber/50 focus:border-amber transition-all shadow-inner"
                   />
                 </div>
 
