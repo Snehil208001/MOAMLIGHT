@@ -19,3 +19,7 @@
 ## 2024-10-14 - React Performance: O(N) operations in render loop
 **Learning:** Performing O(N) operations like `Array.filter` directly inside the render loop for an array mapping (like `CATEGORIES.map` evaluating all products for each category) causes an O(N * C) penalty on every single render. This is especially problematic when states like `selectedCategory` or `sortBy` change frequently, triggering full re-evaluations.
 **Action:** Always extract static array aggregation logic (like counting items per category) into a `useMemo` hook that outputs a lookup map (e.g. `Record<string, number>`). This reduces the operation to a single O(N) pass only when the underlying data changes, turning the render-loop lookup into an O(1) operation.
+
+## 2024-11-13 - Memoizing Inline Derived Arrays in JSX
+**Learning:** Initializing array filtering logic natively within the JSX render block via an IIFE evaluating to an array (e.g. `[item1, item2].filter(Boolean)`) executes on every render. Because elements like `ProductCard` are widely iterated in long lists, and may observe rapidly firing contexts (like `useDayNight`), failing to memoize this causes unnecessary allocations and potentially triggers child component re-renders if these arrays are passed down.
+**Action:** Extract inline array transformations inside component render logic into isolated `useMemo` hooks, mapping their dependencies precisely, rather than declaring or calculating them anonymously in JSX.
