@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useId } from 'react';
 import { ChevronDown, Sparkles, Scissors, ShieldAlert, Recycle, Truck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -17,6 +17,7 @@ interface CandleRitualsAccordionProps {
 
 export const CandleRitualsAccordion: React.FC<CandleRitualsAccordionProps> = ({ guide }) => {
   const [openSection, setOpenSection] = useState<number | null>(0);
+  const baseId = useId();
 
   const sections = [
     {
@@ -61,8 +62,11 @@ export const CandleRitualsAccordion: React.FC<CandleRitualsAccordionProps> = ({ 
             <div key={idx} className="py-3.5 first:pt-0 last:pb-0">
               <button
                 type="button"
+                id={`accordion-button-${baseId}-${idx}`}
+                aria-expanded={isOpen}
+                aria-controls={`accordion-panel-${baseId}-${idx}`}
                 onClick={() => setOpenSection(isOpen ? null : idx)}
-                className="w-full flex items-center justify-between gap-4 text-left group"
+                className="w-full flex items-center justify-between gap-4 text-left group rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-7 h-7 rounded-lg bg-warm-cream flex items-center justify-center text-terracotta border border-warm-border shrink-0">
@@ -82,6 +86,9 @@ export const CandleRitualsAccordion: React.FC<CandleRitualsAccordionProps> = ({ 
               <AnimatePresence>
                 {isOpen && (
                   <motion.div
+                    id={`accordion-panel-${baseId}-${idx}`}
+                    role="region"
+                    aria-labelledby={`accordion-button-${baseId}-${idx}`}
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
