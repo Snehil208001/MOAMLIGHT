@@ -12,3 +12,6 @@
 ## 2024-05-19 - Missing Keyboard Focus on Media Gallery
 **Learning:** Discovered that the custom `ImageGallery` component lacked keyboard focus indicators and ARIA state labels (`aria-current`) on its filter tabs, thumbnails, and mute toggles, making the gallery difficult to navigate for keyboard and screen reader users.
 **Action:** Applied `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60` to all interactive elements within custom galleries and `aria-current="true"` to active states. Next time, always ensure custom UI controls mirror standard button accessibility.
+## 2023-10-26 - Accessible Selection Groups
+**Learning:** Custom selection components (like VariantSelector) in this codebase often use standard buttons without semantic grouping or state tracking, causing screen readers to miss state changes when users click them.
+**Action:** Always wrap custom button groups in `role="group"` with an `aria-labelledby` reference, add `aria-live="polite"` to dynamic description text, and use `aria-pressed` on the buttons to communicate state changes properly.
