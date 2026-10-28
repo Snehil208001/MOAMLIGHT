@@ -64,7 +64,7 @@ export const PromoCodeInput: React.FC = () => {
         <button
           type="submit"
           disabled={!code.trim()}
-          className="px-3.5 py-2 text-xs font-semibold uppercase tracking-wider bg-charcoal text-warm-linen hover:bg-black rounded-lg disabled:opacity-40 transition-colors"
+          className="px-3.5 py-2 text-xs font-semibold uppercase tracking-wider bg-charcoal text-warm-linen hover:bg-black rounded-lg disabled:opacity-40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60 focus-visible:ring-offset-2"
         >
           Apply
         </button>
