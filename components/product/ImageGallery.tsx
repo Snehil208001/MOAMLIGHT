@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, Film, Play, Volume2, VolumeX, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getOptimizedImageUrl } from '@/lib/formatters';
@@ -29,9 +29,70 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMuted, setIsMuted] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const activeItem = mediaItems[activeIndex] || mediaItems[0] || { type: 'image', url: images[0] || '', index: 0 };
   const hasVideos = videos.length > 0;
+
+  // Prioritize universal MP4 sources over HLS (.m3u8) for maximum browser compatibility (Chrome, Edge, Firefox, Safari)
+  const currentVideo = activeItem.type === 'video' ? activeItem.video : null;
+  const sortedSources = currentVideo
+    ? [...currentVideo.sources].sort((a, b) => {
+        const aIsMp4 = a.mimeType.includes('mp4') || a.url.endsWith('.mp4');
+        const bIsMp4 = b.mimeType.includes('mp4') || b.url.endsWith('.mp4');
+        if (aIsMp4 && !bIsMp4) return -1;
+        if (!aIsMp4 && bIsMp4) return 1;
+        return (b.height || 0) - (a.height || 0);
+      })
+    : [];
+
+  const primarySourceUrl = sortedSources[0]?.url;
+
+  // Auto-play when switching to video item, handling browser autoplay policies gracefully
+  useEffect(() => {
+    if (activeItem.type === 'video' && videoRef.current) {
+      const vid = videoRef.current;
+      vid.defaultMuted = isMuted;
+      vid.muted = isMuted;
+
+      const playPromise = vid.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => setIsPlaying(true))
+          .catch(() => {
+            // Autoplay blocked by browser policy without user gesture: show center play button
+            setIsPlaying(false);
+          });
+      }
+    } else {
+      setIsPlaying(false);
+    }
+  }, [activeIndex, activeItem.type, isMuted]);
+
+  const togglePlay = () => {
+    if (!videoRef.current) return;
+    if (videoRef.current.paused) {
+      videoRef.current
+        .play()
+        .then(() => setIsPlaying(true))
+        .catch(() => setIsPlaying(false));
+    } else {
+      videoRef.current.pause();
+      setIsPlaying(false);
+    }
+  };
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsMuted((prev) => {
+      const next = !prev;
+      if (videoRef.current) {
+        videoRef.current.muted = next;
+      }
+      return next;
+    });
+  };
 
   return (
     <div className="space-y-3">
@@ -170,28 +231,55 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="w-full h-full relative bg-charcoal flex items-center justify-center"
+                className="w-full h-full relative bg-charcoal flex items-center justify-center cursor-pointer group"
+                onClick={togglePlay}
               >
                 <video
+                  ref={videoRef}
+                  src={primarySourceUrl}
                   autoPlay
                   playsInline
                   muted={isMuted}
                   loop
                   controls
                   controlsList="nodownload"
+                  preload="auto"
                   poster={activeItem.video.previewUrl || images[0]}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                  onEnded={() => setIsPlaying(false)}
                   className="w-full h-full object-contain bg-black"
                 >
-                  {activeItem.video.sources.map((src, sIdx) => (
+                  {sortedSources.map((src, sIdx) => (
                     <source key={sIdx} src={src.url} type={src.mimeType} />
                   ))}
                   Your browser does not support the video tag.
                 </video>
 
+                {/* Prominent Luxury Play Button Overlay when Paused */}
+                {!isPlaying && (
+                  <div className="absolute inset-0 bg-charcoal/40 backdrop-blur-[2px] flex flex-col items-center justify-center z-10 transition-opacity">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        togglePlay();
+                      }}
+                      className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-amber text-charcoal flex items-center justify-center shadow-[0_0_30px_rgba(245,158,11,0.5)] hover:scale-110 active:scale-95 transition-transform"
+                      aria-label="Play video"
+                    >
+                      <Play className="w-8 h-8 fill-charcoal text-charcoal ml-1" />
+                    </button>
+                    <span className="mt-3 px-3.5 py-1 rounded-full bg-black/75 text-warm-linen text-xs font-semibold tracking-wider uppercase border border-amber/30 shadow-md">
+                      Play Artisan Film
+                    </span>
+                  </div>
+                )}
+
                 {/* Luxury Audio Mute/Unmute Toggle Overlay */}
                 <button
                   type="button"
-                  onClick={() => setIsMuted((prev) => !prev)}
+                  onClick={toggleMute}
                   className="absolute top-4 right-4 z-20 p-2.5 rounded-full bg-charcoal/80 hover:bg-charcoal text-warm-linen backdrop-blur-md border border-white/20 shadow-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60"
                   title={isMuted ? 'Click to Unmute Audio' : 'Mute Audio'}
                   aria-label={isMuted ? 'Unmute video audio' : 'Mute video audio'}
@@ -219,7 +307,10 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
             <>
               <button
                 type="button"
-                onClick={() => setActiveIndex((prev) => (prev > 0 ? prev - 1 : mediaItems.length - 1))}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveIndex((prev) => (prev > 0 ? prev - 1 : mediaItems.length - 1));
+                }}
                 aria-label="Previous image"
                 className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-warm-linen/90 hover:bg-warm-linen text-charcoal backdrop-blur-md border border-warm-border/80 shadow-md flex items-center justify-center transition-all opacity-85 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60"
               >
@@ -227,7 +318,10 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => setActiveIndex((prev) => (prev < mediaItems.length - 1 ? prev + 1 : 0))}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveIndex((prev) => (prev < mediaItems.length - 1 ? prev + 1 : 0));
+                }}
                 aria-label="Next image"
                 className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-warm-linen/90 hover:bg-warm-linen text-charcoal backdrop-blur-md border border-warm-border/80 shadow-md flex items-center justify-center transition-all opacity-85 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60"
               >

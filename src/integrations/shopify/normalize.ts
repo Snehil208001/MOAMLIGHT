@@ -191,7 +191,7 @@ export function normalizeProduct(node: ShopifyProduct): Product {
       extractedVideos.push({
         id: m.id || `video-${extractedVideos.length}`,
         previewUrl: m.previewImage?.url,
-        sources: m.sources,
+        sources: [...m.sources].sort((a, b) => ((b.mimeType?.includes('mp4') || b.url?.endsWith('.mp4') ? 1 : 0) - (a.mimeType?.includes('mp4') || a.url?.endsWith('.mp4') ? 1 : 0))),
       });
     } else if (m.mediaContentType === 'EXTERNAL_VIDEO' && m.embedUrl) {
       extractedVideos.push({

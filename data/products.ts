@@ -525,13 +525,6 @@ export const PRODUCTS: Product[] = [
         previewUrl: 'https://cdn.shopify.com/s/files/1/0792/5851/7672/files/preview_images/c5c713c7ca7b4dfcace550f4e7b56c87.thumbnail.0000000000.jpg?v=1790757714',
         sources: [
           {
-            url: 'https://eyj01h-j3.myshopify.com/cdn/shop/videos/c/vp/c5c713c7ca7b4dfcace550f4e7b56c87/c5c713c7ca7b4dfcace550f4e7b56c87.m3u8',
-            mimeType: 'application/x-mpegURL',
-            format: 'm3u8',
-            height: 720,
-            width: 1280,
-          },
-          {
             url: 'https://eyj01h-j3.myshopify.com/cdn/shop/videos/c/vp/c5c713c7ca7b4dfcace550f4e7b56c87/c5c713c7ca7b4dfcace550f4e7b56c87.HD-720p-1.6Mbps-95981507.mp4',
             mimeType: 'video/mp4',
             format: 'mp4',
@@ -544,6 +537,13 @@ export const PRODUCTS: Product[] = [
             format: 'mp4',
             height: 480,
             width: 852,
+          },
+          {
+            url: 'https://eyj01h-j3.myshopify.com/cdn/shop/videos/c/vp/c5c713c7ca7b4dfcace550f4e7b56c87/c5c713c7ca7b4dfcace550f4e7b56c87.m3u8',
+            mimeType: 'application/x-mpegURL',
+            format: 'm3u8',
+            height: 720,
+            width: 1280,
           },
         ],
       },
