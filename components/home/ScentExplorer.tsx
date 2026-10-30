@@ -62,6 +62,21 @@ export const ScentExplorer: React.FC<ScentExplorerProps> = ({ products = PRODUCT
     [products, activeCategory]
   );
 
+  // ⚡ Bolt: Memoize scent notes array creation to prevent allocating and filtering
+  // a new array on every re-render within the map loop.
+  const productNotesMap = useMemo(() => {
+    const map = new Map<string, string>();
+    products.forEach((product) => {
+      const notes = [
+        product.scentPyramid?.topNotes?.[0],
+        product.scentPyramid?.heartNotes?.[0],
+        product.scentPyramid?.baseNotes?.[0],
+      ].filter(Boolean);
+      map.set(product.id, notes.length > 0 ? notes.join(' • ') : (product.tagline || product.category));
+    });
+    return map;
+  }, [products]);
+
   return (
     <section
       id="scents"
@@ -193,14 +208,7 @@ export const ScentExplorer: React.FC<ScentExplorerProps> = ({ products = PRODUCT
                       <strong className={isNightMode ? 'text-[#F9F6F0]' : 'text-charcoal'}>
                         Key Notes:{' '}
                       </strong>
-                      {(() => {
-                        const notes = [
-                          product.scentPyramid?.topNotes?.[0],
-                          product.scentPyramid?.heartNotes?.[0],
-                          product.scentPyramid?.baseNotes?.[0],
-                        ].filter(Boolean);
-                        return notes.length > 0 ? notes.join(' • ') : product.tagline || product.category;
-                      })()}
+                      {productNotesMap.get(product.id)}
                     </div>
                   </div>
 
