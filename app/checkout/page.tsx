@@ -221,8 +221,9 @@ export default function CheckoutPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                   <div className="sm:col-span-2 space-y-1">
-                    <label className="text-xs font-medium text-charcoal">Full Name *</label>
+                    <label htmlFor="fullName" className="text-xs font-medium text-charcoal">Full Name *</label>
                     <input
+                      id="fullName"
                       type="text"
                       required
                       value={fullName}
@@ -233,8 +234,9 @@ export default function CheckoutPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-charcoal">Email Address *</label>
+                    <label htmlFor="email" className="text-xs font-medium text-charcoal">Email Address *</label>
                     <input
+                      id="email"
                       type="email"
                       required
                       value={email}
@@ -245,9 +247,12 @@ export default function CheckoutPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-charcoal">Mobile Number (+91) *</label>
+                    <label htmlFor="phone" className="text-xs font-medium text-charcoal">Mobile Number (+91) *</label>
                     <input
+                      id="phone"
                       type="tel"
+                      inputMode="numeric"
+                      pattern="\d*"
                       required
                       maxLength={10}
                       value={phone}
@@ -258,8 +263,9 @@ export default function CheckoutPage() {
                   </div>
 
                   <div className="sm:col-span-2 space-y-1">
-                    <label className="text-xs font-medium text-charcoal">Flat, House No., Building, Street *</label>
+                    <label htmlFor="addressLine" className="text-xs font-medium text-charcoal">Flat, House No., Building, Street *</label>
                     <input
+                      id="addressLine"
                       type="text"
                       required
                       value={addressLine}
@@ -270,9 +276,12 @@ export default function CheckoutPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-charcoal">6-digit Postal Pincode *</label>
+                    <label htmlFor="pincode" className="text-xs font-medium text-charcoal">6-digit Postal Pincode *</label>
                     <input
+                      id="pincode"
                       type="text"
+                      inputMode="numeric"
+                      pattern="\d*"
                       required
                       maxLength={6}
                       value={pincode}
@@ -283,8 +292,9 @@ export default function CheckoutPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-charcoal">City</label>
+                    <label htmlFor="city" className="text-xs font-medium text-charcoal">City</label>
                     <input
+                      id="city"
                       type="text"
                       required
                       value={city}
