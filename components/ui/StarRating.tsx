@@ -23,8 +23,9 @@ export const StarRating: React.FC<StarRatingProps> = ({
 
   return (
     <div className={cn('inline-flex items-center gap-1.5', className)}>
+      {/* ⚡ Bolt: Use a statically defined array instead of [...Array(5)] to prevent unnecessary array allocations on every render for this frequently used component. */}
       <div className="flex items-center gap-0.5 text-amber-gold">
-        {[...Array(5)].map((_, i) => {
+        {[0, 1, 2, 3, 4].map((_, i) => {
           const isFilled = i < fullStars;
           const isHalf = i === fullStars && hasHalfStar;
 
