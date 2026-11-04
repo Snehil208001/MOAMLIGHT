@@ -23,3 +23,7 @@
 ## 2024-11-13 - Memoizing Inline Derived Arrays in JSX
 **Learning:** Initializing array filtering logic natively within the JSX render block via an IIFE evaluating to an array (e.g. `[item1, item2].filter(Boolean)`) executes on every render. Because elements like `ProductCard` are widely iterated in long lists, and may observe rapidly firing contexts (like `useDayNight`), failing to memoize this causes unnecessary allocations and potentially triggers child component re-renders if these arrays are passed down.
 **Action:** Extract inline array transformations inside component render logic into isolated `useMemo` hooks, mapping their dependencies precisely, rather than declaring or calculating them anonymously in JSX.
+
+## 2024-11-20 - Context Provider Value Memoization
+**Learning:** When a Context Provider manages an internal state (like an array of toasts) that changes frequently, but the exposed context interface only contains stable callback references, omitting `useMemo` on the provider's `value` object creates a new object reference on every state change. This forces all components consuming the context (e.g., `ProductCard` mapped in large lists) to re-render pointlessly whenever the internal state updates.
+**Action:** Always memoize the object passed to a Context Provider's `value` prop using `useMemo`, mapping precisely to the exposed stable references, to prevent widespread and unnecessary re-renders of consumer components.
