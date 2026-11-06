@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, Sparkles, X } from 'lucide-react';
 
@@ -52,8 +52,15 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     [removeToast]
   );
 
+  // ⚡ Bolt: Memoize context value to prevent widespread unnecessary re-renders
+  // of consumer components whenever the internal toasts state array updates.
+  const contextValue = useMemo(
+    () => ({ showToast, removeToast }),
+    [showToast, removeToast]
+  );
+
   return (
-    <ToastContext.Provider value={{ showToast, removeToast }}>
+    <ToastContext.Provider value={contextValue}>
       {children}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none px-4 sm:px-0">
         <AnimatePresence>
