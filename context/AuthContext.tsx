@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode, useMemo } from 'react';
 import {
   Customer,
   CustomerCreateInput,
@@ -180,19 +180,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, []);
 
+  const contextValue = useMemo(() => ({
+    customer,
+    token: customer ? 'http-only' : null, // Mock token for compatibility if any component checks for it
+    isAuthenticated: Boolean(customer),
+    isLoading,
+    login,
+    register,
+    logout,
+    recoverPassword,
+    refreshCustomer,
+  }), [
+    customer,
+    isLoading,
+    login,
+    register,
+    logout,
+    recoverPassword,
+    refreshCustomer,
+  ]);
+
   return (
     <AuthContext.Provider
-      value={{
-        customer,
-        token: customer ? 'http-only' : null, // Mock token for compatibility if any component checks for it
-        isAuthenticated: Boolean(customer),
-        isLoading,
-        login,
-        register,
-        logout,
-        recoverPassword,
-        refreshCustomer,
-      }}
+      value={contextValue}
     >
       {children}
     </AuthContext.Provider>
