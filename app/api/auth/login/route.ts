@@ -16,8 +16,10 @@ export async function POST(request: Request) {
     const res = await loginCustomer({ email, password });
 
     if (res.userErrors && res.userErrors.length > 0) {
+      // Sentinel: Sanitize API route error messages to prevent leaking internal stack details or backend information
+      console.error('[Login API] User login error:', res.userErrors);
       return NextResponse.json(
-        { success: false, error: res.userErrors[0].message },
+        { success: false, error: 'Invalid email or password. Please try again.' },
         { status: 401 }
       );
     }

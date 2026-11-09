@@ -20,3 +20,8 @@
 **Vulnerability:** The client-side `AuthContext.tsx` provider passed raw `err.message` exceptions directly into the frontend state during `login`, `register`, and `recoverPassword` operations, causing potential information leakage of unhandled API details or fetch errors in the UI.
 **Learning:** Returning unhandled exception messages from catch blocks directly to the UI layer can leak technical infrastructure info or unexpected error shapes. These details should be logged securely using `console.error` for debugging but never exposed as user-facing strings.
 **Prevention:** Always sanitize UI error states to return generic, user-friendly messages rather than passing raw Error objects or `.message` properties.
+
+## 2026-10-08 - Next.js API Route Login Enumeration and Backend Detail Leakage
+**Vulnerability:** The API route `/api/auth/login` exposed raw Shopify `userErrors` messages in a 401 response.
+**Learning:** Shopify Storefront API `userErrors` are designed to be safe validation messages, but exposing them verbatim via a custom backend API route can allow user enumeration (e.g. distinguishing between "Invalid password" and "Email not found") and leak information about the underlying headless architecture.
+**Prevention:** For server-side API routes handling authentication, always replace dynamic backend validation responses with generic fallback messages (e.g., "Invalid email or password") before returning them to the client, while preserving the raw details in server logs.
