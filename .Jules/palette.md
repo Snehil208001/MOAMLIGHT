@@ -15,3 +15,6 @@
 ## 2023-10-26 - Accessible Selection Groups
 **Learning:** Custom selection components (like VariantSelector) in this codebase often use standard buttons without semantic grouping or state tracking, causing screen readers to miss state changes when users click them.
 **Action:** Always wrap custom button groups in `role="group"` with an `aria-labelledby` reference, add `aria-live="polite"` to dynamic description text, and use `aria-pressed` on the buttons to communicate state changes properly.
+## 2026-11-09 - Form Input Accessibility Enhancements
+**Learning:** Placeholders or surrounding icons are insufficient for screen reader accessibility. Using an explicit `<label>` element linked via `useId()` and visually hidden with `sr-only` provides the most robust accessibility for inputs without visible labels.
+**Action:** Always ensure inputs without visible text labels use `useId()` to link to a visually hidden `<label className="sr-only">`, replacing or supplementing `aria-label` attributes for better screen reader compatibility.

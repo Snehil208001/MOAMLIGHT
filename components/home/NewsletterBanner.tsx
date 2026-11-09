@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useId } from 'react';
 import { Mail, Check, Sparkles, Copy } from 'lucide-react';
 
 export const NewsletterBanner: React.FC = () => {
   const [contact, setContact] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [copied, setCopied] = useState(false);
+  const inputId = useId();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,11 +62,12 @@ export const NewsletterBanner: React.FC = () => {
         ) : (
           <form onSubmit={handleSubmit} className="mt-8 max-w-md mx-auto flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
+              <label htmlFor={inputId} className="sr-only">Email or WhatsApp number</label>
               <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-charcoal-muted" />
               <input
+                id={inputId}
                 type="text"
                 required
-                aria-label="Email or WhatsApp number"
                 value={contact}
                 onChange={(e) => setContact(e.target.value)}
                 placeholder="Enter Email or WhatsApp (+91)..."

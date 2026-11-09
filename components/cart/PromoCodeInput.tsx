@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useId } from 'react';
 import { useCart } from '@/context/CartContext';
 import { formatINR } from '@/lib/formatters';
 import { Tag, Check, X } from 'lucide-react';
@@ -9,6 +9,7 @@ export const PromoCodeInput: React.FC = () => {
   const { appliedCoupon, applyCoupon, removeCoupon } = useCart();
   const [code, setCode] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const inputId = useId();
 
   const handleApply = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,10 +49,11 @@ export const PromoCodeInput: React.FC = () => {
     <div className="space-y-1.5">
       <form onSubmit={handleApply} className="flex gap-2">
         <div className="relative flex-1">
+          <label htmlFor={inputId} className="sr-only">Promo code</label>
           <Tag className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-charcoal-muted" />
           <input
+            id={inputId}
             type="text"
-            aria-label="Promo code"
             value={code}
             onChange={(e) => {
               setCode(e.target.value.toUpperCase());
