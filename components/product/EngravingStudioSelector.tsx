@@ -122,7 +122,7 @@ export const EngravingStudioSelector: React.FC<EngravingStudioSelectorProps> = (
                   <button
                     type="button"
                     onClick={onPreview3D}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-warm-cream hover:bg-warm-linen text-terracotta text-xs font-medium flex items-center gap-1 transition-colors border border-warm-border"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-warm-cream hover:bg-warm-linen text-terracotta text-xs font-medium flex items-center gap-1 transition-colors border border-warm-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta/60 focus-visible:ring-offset-2"
                   >
                     <Eye className="w-3.5 h-3.5" />
                     <span className="hidden sm:inline">3D View</span>
