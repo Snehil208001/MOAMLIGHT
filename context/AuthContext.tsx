@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
 import {
   Customer,
   CustomerCreateInput,
@@ -180,20 +180,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, []);
 
+  // ⚡ Bolt: Cache context value to prevent unnecessary re-renders of consumer components when the provider's parent re-renders.
+  const contextValue = useMemo(() => ({
+    customer,
+    token: customer ? 'http-only' : null, // Mock token for compatibility if any component checks for it
+    isAuthenticated: Boolean(customer),
+    isLoading,
+    login,
+    register,
+    logout,
+    recoverPassword,
+    refreshCustomer,
+  }), [customer, isLoading, login, register, logout, recoverPassword, refreshCustomer]);
+
   return (
-    <AuthContext.Provider
-      value={{
-        customer,
-        token: customer ? 'http-only' : null, // Mock token for compatibility if any component checks for it
-        isAuthenticated: Boolean(customer),
-        isLoading,
-        login,
-        register,
-        logout,
-        recoverPassword,
-        refreshCustomer,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
