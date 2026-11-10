@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useId } from 'react';
 import { estimatePincodeDelivery, PincodeInfo } from '@/data/pincodes';
 import { Truck, Check, AlertCircle, MapPin } from 'lucide-react';
 
@@ -8,6 +8,7 @@ export const PincodeEstimator: React.FC = () => {
   const [pincode, setPincode] = useState('');
   const [estimate, setEstimate] = useState<PincodeInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const inputId = useId();
 
   const handleCheck = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,11 +37,12 @@ export const PincodeEstimator: React.FC = () => {
       </div>
 
       <div className="flex gap-2">
+        <label htmlFor={inputId} className="sr-only">Enter 6-digit pincode</label>
         <input
+          id={inputId}
           type="text"
           inputMode="numeric"
           pattern="\d*"
-          aria-label="Enter 6-digit pincode"
           maxLength={6}
           value={pincode}
           onChange={(e) => {
